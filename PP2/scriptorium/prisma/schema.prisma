@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+// Used GitHub Copilot to reformat code for readibility
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            Int          @id @default(autoincrement())
+  username      String       @unique
+  password      String
+  firstName     String       @default("")
+  lastName      String       @default("")
+  email         String       @unique
+  avatar        Int
+  role          String       @default("USER")
+  createdAt     DateTime     @default(now())
+  comments      Comment[]
+  blogPosts     BlogPost[]
+  codeTemplates CodeTemplate[]
+  ratings       Rating[]
+  commentReports CommentReport[]
+  BlogReports    BlogReport[]
+}
+
+model BlogPost {
+  id              Int          @id @default(autoincrement())
+  title           String
+  createdAt       DateTime     @default(now())
+  authorId        Int
+  description     String
+  author          User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content         String
+  codeTemplate    CodeTemplate[]
+  ratingScore     Int @default(0) 
+  rating          Rating[]    
+  reports         BlogReport[]  
+  hidden          Boolean      @default(false)
+  comments        Comment[]    
+  tags            Tag[]        @relation("BlogPostTags")
+}
+
+model CommentReport {
+  id          Int       @id @default(autoincrement())
+  reporter    User      @relation(fields: [reporterId], references: [id])
+  reporterId  Int
+  reason      String
+  commentId   Int
+  comment     Comment    @relation(fields: [commentId], references: [id])
+  createdAt   DateTime   @default(now())
+}
+
+model BlogReport {
+  id          Int       @id @default(autoincrement())
+  reporter    User      @relation(fields: [reporterId], references: [id])
+  reporterId  Int
+  reason      String
+  blogId      Int
+  blog        BlogPost   @relation(fields: [blogId], references: [id])
+  createdAt   DateTime   @default(now())
+}
+
+model CodeTemplate {
+  id          Int          @id @default(autoincrement())
+  title       String
+  explanation String
+  code        Code         @relation(fields: [codeId], references: [id])
+  codeId      Int          @unique
+  tags        Tag[]        @relation("TemplateTags")
+  author      User         @relation(fields: [authorId], references: [id])
+  authorId    Int
+  blogs       BlogPost[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  isForked    Boolean      @default(false)
+}
+
+model Comment {
+  id           Int       @id @default(autoincrement())
+  content      String
+  author       User      @relation(fields: [authorId], references: [id])
+  authorId     Int
+  blogPostId   Int
+  parentId     Int?
+  ratingScore  Int @default(0)
+  blogPost     BlogPost @relation(fields: [blogPostId], references: [id])
+  parent       Comment?  @relation("ParentComment", fields: [parentId], references: [id])
+  replies      Comment[] @relation("ParentComment")
+  reports      CommentReport[]
+  ratings      Rating[]
+  hidden       Boolean    @default(false)
+  @@index([parentId])
+}
+
+model Rating {
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  blogPostId  Int?
+  blogPost    BlogPost? @relation(fields: [blogPostId], references: [id])
+  commentId   Int?
+  comment     Comment?  @relation(fields: [commentId], references: [id])
+  rating      Int       // + 1 for upvotes, -1 for downvotes
+
+  // ensure ratings can only be done once for a blog or a comment
+  @@unique([userId, blogPostId])
+  @@unique([userId, commentId])
+}
+
+model Tag {
+  name            String            @id
+  codeTemplates   CodeTemplate[]    @relation("TemplateTags")
+  blogs           BlogPost[]        @relation("BlogPostTags")
+}
+
+model Code {
+  id        Int      @id @default(autoincrement())
+  filePath  String
+  language  String
+  codeTemplate  CodeTemplate?
+  createdAt DateTime  @default(now())
+}
