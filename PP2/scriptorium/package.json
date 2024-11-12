@@ -1,7 +1,7 @@
 {
   "name": "scriptorium",
   "version": "0.1.0",
-  "type": "module", 
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.6.0",
     "@prisma/client": "^5.21.1",
     "@prisma/studio": "^0.503.0",
     "bcrypt": "^5.1.1",
