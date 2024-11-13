@@ -39,6 +39,12 @@ export default async function handler(req, res) {
         });
       }
 
+      // check if email has valid regex
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+
       // check if username already exists
       const existingUser = await prisma.user.findUnique({
         where: { username },
