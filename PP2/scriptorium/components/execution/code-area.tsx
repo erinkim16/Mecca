@@ -6,11 +6,13 @@ interface CodeAreaProps {
     language?: string;
     height?: string;
     width?: string;
+    code: string; // The code content passed as a prop
+    setCode: React.Dispatch<React.SetStateAction<string>>;
 }
+
 
 export default function CodeArea(props: CodeAreaProps) {
     // TODO -> set default code to correspond to simple language-specifc code
-    const [code, setCode] = useState("");
 
     return (
         <MonacoEditor
@@ -18,15 +20,14 @@ export default function CodeArea(props: CodeAreaProps) {
             width={props.width}
             language={props.language?.toLowerCase()}
             theme="vs-dark"
-            value={code}
-            onChange={(value) => setCode(value || "")}
+            value={props.code}
+            onChange={(value) => props.setCode(value || "")}
         />
     );
 }
 
 CodeArea.defaultProps = {
-    language: "python",
     height: "80vh",
-    width: "60vw"
+    width: "60vw",
 };
 
