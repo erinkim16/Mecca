@@ -12,8 +12,11 @@
   --primary: #809bce;
   --primary-dark: #3c5a99;
   --secondary: #eac4d5;
+  --secondary-dark: #c27b8c;
   --accent: #b8e0d2;
+  --accent-dark: #85c8b8;
   --ui: #95b8d1 ;
+  --ui-dark:  #5d89a8;
 }
 
 /* @media (prefers-color-scheme: dark) {
