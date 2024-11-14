@@ -17,7 +17,7 @@ export default function LanguageDropdown(props: LanguageDropdownProps) {
         // TODO: add more languages
         <div>
             <label>Language:</label>
-            <select id="language" name="language" >
+            <select id="language" name="language" onChange={handleLanguageChange}>
                 <option value="python">Python</option>
                 <option value="java">Java</option>
                 <option value="c">C</option>
