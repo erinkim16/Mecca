@@ -101,7 +101,7 @@ export default async function handler(req, res) {
     case "GET":
       try {
         const { query, page = 1, limit = 10 } = req.query;
-        // pagintating
+        // paginating
         const parsedPage = parseInt(page);
         const parsedLimit = parseInt(limit);
         const skip = (parsedPage - 1) * parsedLimit;
@@ -116,48 +116,53 @@ export default async function handler(req, res) {
           visitor = true;
         }
 
-        const lowerCaseQuery = query ? query.toLowerCase() : "";
+        // Split query into multiple terms, or use an empty array if no query
+        const queryTerms = query ? query.toLowerCase().split(" ") : [];
 
         let templates;
-        if (query && !visitor) {
-          //  searching through my saved code templates
+        if (queryTerms.length && !visitor) {
+          // Searching through user's saved code templates with multiple terms
           templates = await prisma.codeTemplate.findMany({
             where: {
               authorId: parseInt(user.id),
-              OR: [
-                { title: { contains: lowerCaseQuery } },
-                { explanation: { contains: lowerCaseQuery } },
-                {
-                  tags: {
-                    some: { name: { contains: lowerCaseQuery } },
+              OR: queryTerms.map((term) => ({
+                OR: [
+                  { title: { contains: term } },
+                  { explanation: { contains: term } },
+                  {
+                    tags: {
+                      some: { name: { contains: term } },
+                    },
                   },
-                },
-              ],
+                ],
+              })),
             },
             include: { tags: true, code: true },
             skip: skip,
             take: parsedLimit,
           });
-        } else if (query && visitor) {
-          // a visitor
+        } else if (queryTerms.length && visitor) {
+          // A visitor searching through templates with multiple terms
           templates = await prisma.codeTemplate.findMany({
             where: {
-              OR: [
-                { title: { contains: lowerCaseQuery } },
-                { explanation: { contains: lowerCaseQuery } },
-                {
-                  tags: {
-                    some: { name: { contains: lowerCaseQuery } },
+              OR: queryTerms.map((term) => ({
+                OR: [
+                  { title: { contains: term } },
+                  { explanation: { contains: term } },
+                  {
+                    tags: {
+                      some: { name: { contains: term } },
+                    },
                   },
-                },
-              ],
+                ],
+              })),
             },
             include: { tags: true, code: true },
             skip: skip,
             take: parsedLimit,
           });
         } else if (!visitor) {
-          // return all of user's templates
+          // Return all of the user's templates if no query terms
           templates = await prisma.codeTemplate.findMany({
             where: { authorId: parseInt(user.id) },
             include: { tags: true, code: true },
@@ -165,7 +170,7 @@ export default async function handler(req, res) {
             take: parsedLimit,
           });
         } else {
-          // return all templates
+          // Return all templates if no query terms
           templates = await prisma.codeTemplate.findMany({
             include: { tags: true, code: true },
             skip: skip,
