@@ -6,8 +6,8 @@ import ExecSettings from "../components/execution/exec-settings"
 export default function Execution() {
     const [code, setCode] = useState("");
     const [language, setLanguage] = useState("python");
-    const [width, setWidth] = useState(0);
     const [codeWidth, setCodeWidth] = useState("60vw");
+    const [fontSize, setFontSize] = useState(16);
 
     useEffect(() => {
         const handleResize = () => {
@@ -15,8 +15,10 @@ export default function Execution() {
     
           if (currentWidth <= 768) {
             setCodeWidth("90vw");
+            setFontSize(16);
           } else {
             setCodeWidth("60vw");
+            setFontSize(18);
           }
         };
     
@@ -31,7 +33,7 @@ export default function Execution() {
         <div className="flex items-center justify-center m-2 flex-col md:flex-row">
 
             <div className="m-4">
-                <CodeArea width={codeWidth} language={language} code={code} setCode={setCode}/>   
+                <CodeArea fontSize={fontSize} width={codeWidth} language={language} code={code} setCode={setCode}/>   
             </div>
 
             <div className="exec-options m-4">

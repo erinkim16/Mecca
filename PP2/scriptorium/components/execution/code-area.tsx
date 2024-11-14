@@ -4,6 +4,7 @@ interface CodeAreaProps {
     language?: string;
     height?: string;
     width?: string;
+    fontSize?: number;
     code: string; // The code content passed as a prop
     setCode: React.Dispatch<React.SetStateAction<string>>;
 }
@@ -13,6 +14,7 @@ export default function CodeArea(props: CodeAreaProps) {
     // TODO -> set default code to correspond to simple language-specifc code
 
     return (
+        <>
         <MonacoEditor
             height={props.height}
             width={props.width}
@@ -20,12 +22,17 @@ export default function CodeArea(props: CodeAreaProps) {
             theme="vs-dark"
             value={props.code}
             onChange={(value) => props.setCode(value || "")}
+            options={{
+                fontSize: props.fontSize
+            }}
         />
+        </>
     );
 }
 
 CodeArea.defaultProps = {
     height: "80vh",
     width: "60vw",
+    fontSize: 16
 };
 
