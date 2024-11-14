@@ -1,5 +1,3 @@
-import React, { useState, useEffect, useRef } from "react";
-
 import MonacoEditor from "@monaco-editor/react";
 
 interface CodeAreaProps {
