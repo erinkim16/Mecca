@@ -41,10 +41,10 @@ export default function ExecSettings(props: ExecSettingsProps) {
         <label>Output:</label>
 
         <div id="output"> 
-            <p>{output}</p>
+            <p className="exec-output">{output}</p>
 
             {error && (
-                <p>{error}</p>
+                <p className="exec-error mt-2">{error}</p>
             )}
         </div>    
     </>;

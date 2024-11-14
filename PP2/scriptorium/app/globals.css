@@ -55,6 +55,15 @@ select {
   background-size: 1.2rem;
 }
 
+/* Stuff for execution */
+.exec-output, .exec-error {
+  @apply p-4 border  rounded-md bg-white text-gray-700 break-words
+    shadow-md max-w-lg mx-auto max-h-80 overflow-y-auto whitespace-normal overflow-x-hidden;
+  @apply text-base;
+
+  font-family: monospace;
+}
+
 
 @layer utilities {
   .text-balance {
