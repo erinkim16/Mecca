@@ -2,15 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
   --background: #f7fcff;
   --foreground: #171717;
   --primary: #809bce;
-  --primary-dark: #3c5a99;
+  --primary-dark: #5876b8;
   --secondary: #eac4d5;
   --secondary-dark: #c27b8c;
-  --accent: #b8e0d2;
-  --accent-dark: #85c8b8;
+  --accent: #82b4a3;
+  --accent-dark: #4d8673;
   --ui: #95b8d1 ;
   --ui-dark: #5d89a8;
 }
@@ -39,6 +40,7 @@ button {
   @apply sm:px-5 sm:py-2 sm:text-sm;
   @apply md:px-6 md:py-3 md:text-base;
   @apply px-8 py-4 text-white bg-primary shadow-lg font-bold rounded-lg transition duration-300 ease-in-out transform hover:bg-primaryDark hover:scale-90;
+  @apply border border-primaryDark;
 }
 
 /* Credit: GPT helped with styling */
