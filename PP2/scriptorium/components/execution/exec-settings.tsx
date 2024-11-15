@@ -1,5 +1,6 @@
 import { useState } from "react";
 import LanguageDropdown from "./language-dropdown";
+import TagInput from "./tag-input";
 
 interface ExecSettingsProps {
     language: string;
@@ -34,11 +35,28 @@ export default function ExecSettings(props: ExecSettingsProps) {
     };
     
     return <>  
-        <LanguageDropdown language={props.language} setLanguage={props.setLanguage}/>
 
-        <button className="m-4" onClick={() => executeAndUpdateOut()}>Run</button>
+        {/* DB Settings */}
+        <div>
+            <label > Title </label>
+            <input placeholder="Type your title here..."></input>
 
-                <div className="flex flex-col w-full">
+            <label> Description </label>
+            <input placeholder="Type your description here..."></input>
+
+            <label>Tags</label>
+            <TagInput />
+        </div>
+
+        <div className="flex flex-row items-center justify-center">
+            <LanguageDropdown language={props.language} setLanguage={props.setLanguage}/>
+            <button className="m-4" onClick={() => executeAndUpdateOut()}>Run</button>
+            <button className="m-4 bg-accent border-accentDark">Save</button>
+            <button className="m-4 bg-accent border-accentDark">Fork</button>
+        </div>
+
+        {/* Input and Output Fields */}
+        <div className="flex flex-col w-full">
             <label htmlFor="input">Input:</label>
             <input
                 id="input"
