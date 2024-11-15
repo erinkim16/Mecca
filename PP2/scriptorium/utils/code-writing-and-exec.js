@@ -105,7 +105,7 @@ function getExecOutput(process) {
 
         // Collect stdout data
         process.stdout.on('data', (data) => {
-            stdout += data.toString();
+            stdout += data.toString() + '\n';
         });
 
         // Collect stderr data
