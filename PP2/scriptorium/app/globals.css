@@ -30,7 +30,7 @@ body {
   
 }
 
-button, select, input, textarea, label {
+button, select, input, textarea, label, p {
   @apply m-2;
 }
 
@@ -44,7 +44,7 @@ button {
 /* Credit: GPT helped with styling */
 /* Custom select styles */
 select {
-  @apply px-4 py-2 text-lg text-gray-700 bg-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200;
+  @apply border border-gray-200 px-4 py-2 text-lg text-gray-700 bg-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200;
 
   /* Remove default arrow icon */
   -webkit-appearance: none; /* for WebKit browsers like Safari */
@@ -55,13 +55,25 @@ select {
   background-size: 1.2rem;
 }
 
+input, .exec-output {
+  @apply w-full p-4 border border-gray-200 rounded-md bg-white text-gray-700 shadow-md;
+  box-sizing: border-box;
+}
+
 /* Stuff for execution */
 .exec-output, .exec-error {
-  @apply p-4 border  rounded-md bg-white text-gray-700 break-words
-    shadow-md max-w-lg mx-auto max-h-80 overflow-y-auto whitespace-normal overflow-x-hidden;
-  @apply text-base;
-
+  @apply max-h-80 overflow-y-auto overflow-x-hidden whitespace-normal break-words;
+  @apply text-base w-full p-4 border border-gray-200 rounded-md bg-white text-gray-700 shadow-md;
   font-family: monospace;
+  word-break: break-all; /* Ensures that extremely long words wrap */
+  white-space: pre-wrap;
+}
+
+.exec-error { 
+  @apply border-secondaryDark;
+  @apply bg-secondary;
+  @apply text-sm;
+  @apply text-balance;
 }
 
 

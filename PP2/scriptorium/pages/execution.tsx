@@ -30,17 +30,18 @@ export default function Execution() {
       }, []); // Empty dependency array ensures this runs only once
     
     return (
-        <div className="flex items-center justify-center m-2 flex-col md:flex-row">
+      <div className="flex items-center justify-center w-full flex-col md:flex-row p-4">
 
-            <div className="m-4">
-                <CodeArea fontSize={fontSize} width={codeWidth} language={language} code={code} setCode={setCode}/>   
-            </div>
-
-            <div className="exec-options m-4">
-                <ExecSettings language={language} setLanguage={setLanguage} code={code} setCode={setCode}/>
-            </div>
+      <div className="p-2">
+          <CodeArea fontSize={fontSize} width={codeWidth} language={language} code={code} setCode={setCode}/>   
+      </div>
   
-        </div> 
+      <div className="exec-options p-2 w-full md:flex-1">
+          <ExecSettings language={language} setLanguage={setLanguage} code={code} setCode={setCode}/>
+      </div>
+  
+    </div>
+  
     )
 }
 

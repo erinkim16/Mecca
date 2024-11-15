@@ -13,6 +13,9 @@ export default function ExecSettings(props: ExecSettingsProps) {
     const [error, setError] = useState("");
     const [stdin, setStdin] = useState("");
 
+    // Hide and Show Certain Elements
+    // TODO
+
     const executeAndUpdateOut = async () => {
         // Clear what's currently outputted
         setOutput("");
@@ -35,18 +38,26 @@ export default function ExecSettings(props: ExecSettingsProps) {
 
         <button className="m-4" onClick={() => executeAndUpdateOut()}>Run</button>
 
-        <label>Input:</label>
-        <input type="text" value={stdin} onChange={(e) => setStdin(e.target.value)}/>
+                <div className="flex flex-col w-full">
+            <label htmlFor="input">Input:</label>
+            <input
+                id="input"
+                type="text"
+                className="w-full"
+                value={stdin}
+                onChange={(e) => setStdin(e.target.value)}
+            />
 
-        <label>Output:</label>
+            <label htmlFor="output">Output:</label>
+            <div id="output" className="w-full">
+                <p className="exec-output">{output}</p>
 
-        <div id="output"> 
-            <p className="exec-output">{output}</p>
-
-            {error && (
-                <p className="exec-error mt-2">{error}</p>
-            )}
-        </div>    
+                {error && (
+                    <p className="exec-error mt-2">{error}</p>
+                )}
+            </div>
+        </div>
+           
     </>;
 }
 
