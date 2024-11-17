@@ -10,18 +10,22 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const authHeader = req.headers.authorization;
     const user = verifyAccessToken(authHeader);
-
+  
     if (!user) {
       return res
         .status(401)
         .json({ error: "Please sign in to create a blog post" });
     }
-
-    // assuming the code templates would be passed as links
+  
     const { title, description, content, tags, codeTemplates } = req.body;
-
+  
+    if (!title || !description || !content || typeof content !== 'object') {
+      return res
+        .status(400)
+        .json({ error: "Blog posts must have a title, description, and valid content." });
+    }
+  
     try {
-      // check if the added code template exists
       const templateIds = getTemplateIds(codeTemplates);
       const templates = await prisma.codeTemplate.findMany({
         where: {
@@ -30,28 +34,20 @@ export default async function handler(req, res) {
           },
         },
       });
-
-      // if all the templates exist then the lengths should be the same
+  
       if (templates.length != codeTemplates.length) {
-        console.log(templateIds)
         return res
           .status(400)
-          .json({
-            error: "Some code templates do not exist. Please check urls",
-          });
+          .json({ error: "Some code templates do not exist. Please check URLs." });
       }
-
-      if (!title || !description || !content || content === ""){
-        return res.status(400).json({ error: "Blog Posts must have a title, description, and valid content."});
-      }
-
+  
       const blog = await prisma.blogPost.create({
         data: {
           title,
           description,
-          content, 
+          content, // Save TipTap JSON content here
           codeTemplate: {
-            connect: templates.map((template) => ({ id: template.id })),   
+            connect: templates.map((template) => ({ id: template.id })),
           },
           author: {
             connect: { id: user.id },
@@ -65,53 +61,31 @@ export default async function handler(req, res) {
         },
         include: { tags: true, codeTemplate: true },
       });
-
+  
       res.status(200).json(blog);
     } catch (error) {
-        console.log(error);
+      console.log(error);
       return res.status(500).json({ error: "Blog post could not be created" });
     }
-  } else if (req.method === "GET") {
+  } if (req.method === "GET") {
     const query = req.query.paramName?.toLowerCase();
+  
     try {
       const blogPosts = await prisma.blogPost.findMany({
         where: {
           hidden: false,
           OR: [
-            {
-              title: {
-                contains: query,
-              },
-            },
-            {
-              content: {
-                contains: query,
-              },
-            },
+            { title: { contains: query } },
+            { content: { contains: query } },
             {
               tags: {
-                some: {
-                  name: {
-                    contains: query,
-                  },
-                },
+                some: { name: { contains: query } },
               },
             },
             {
               codeTemplate: {
                 some: {
-                  title: {
-                    contains: query,
-                  },
-                },
-              },
-            },
-            {
-              codeTemplate: {
-                some: {
-                  explanation: {
-                    contains: query,
-                  },
+                  title: { contains: query },
                 },
               },
             },
@@ -122,17 +96,16 @@ export default async function handler(req, res) {
           tags: true,
           codeTemplate: true,
         },
-        orderBy: {
-          ratingScore: "desc",
-        },
+        orderBy: { ratingScore: "desc" },
       });
+  
       res.status(200).json(blogPosts);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Failed to fetch blog posts" });
     }
   }
-}
+}  
 
 
 // helper function to extract template ids to query them
