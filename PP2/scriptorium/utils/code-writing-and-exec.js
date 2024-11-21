@@ -3,8 +3,9 @@ import fs from 'fs';
 import { get } from 'http';
 import path from 'path';
 import os from 'os';
+import Docker from 'dockerode';
 
-
+const docker = new Docker();
 const SUPPORTED_LANGUAGES = ["python", "java", "c", "javascript", "c++"];
 const TIMEOUT_TIME = 3000;
 const MAX_RESOURCES = 50; // 50 MB
@@ -270,4 +271,61 @@ function getRandomTempFile() {
     return { temp_file_dir, filename, relative_path };
 }
 
-export { SUPPORTED_LANGUAGES, executeCode };
+async function executeCodeDocker(code, language, stdin) {
+  try {
+    // Map languages to Docker images
+    const imageMap = {
+      python: 'my-python-env',
+      java: 'my-java-env',
+      // Add more languages as needed
+    };
+    const image = imageMap[language];
+
+    if (!image) {
+      return res.status(400).json({ error: 'Language not supported.' });
+    }
+
+    const absolutePath = path.join(process.cwd(), 'PP2', 'scriptorium', 'utils', 'temp-compiled-files');
+    console.log(absolutePath);
+    var dockerPath = absolutePath.replace(/\\/g, '/');
+    console.log(dockerPath);
+
+    // Create and start a Docker container to execute the code
+    const container = await docker.createContainer({
+      Image: image,
+      Tty: false,
+      Cmd: ["python3", "your_code2.py"], // Adjust command per language
+      Binds: [`${dockerPath}:/app`], // Bind current directory
+      HostConfig: {
+        AutoRemove: true,
+        Memory: 512 * 1024 * 1024, // Memory limit
+        CpuShares: 1024, // CPU limit
+      },
+    });
+
+    await container.start();
+
+    // Attach to the container's output stream
+    const stream = await container.attach({ stream: true, stdout: true, stderr: true });
+    let output = '';
+
+    // Listen for data from the container's output
+    stream.on('data', (chunk) => {
+        // Convert chunk to string and remove non-printable characters using regex
+        output += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    });
+
+    // Wait for the container to stop
+    await container.wait();
+
+    // Log the output after the container stops
+    console.log(output);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+executeCodeDocker("temp", "python", "temp");
+
+export { SUPPORTED_LANGUAGES, executeCode, executeCodeDocker };

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import LanguageDropdown from "./language-dropdown";
-import TagInput from "./tag-input";
+import TagInput from "../general/tag-input";
 
 interface ExecSettingsProps {
     language: string;
