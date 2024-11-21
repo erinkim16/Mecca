@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   
     const { title, description, content, tags, codeTemplates } = req.body;
   
-    if (!title || !description || !content || typeof content !== 'object') {
+    if (!title || !description || !content) {
       return res
         .status(400)
         .json({ error: "Blog posts must have a title, description, and valid content." });
@@ -54,8 +54,8 @@ export default async function handler(req, res) {
           },
           tags: {
             connectOrCreate: tags.map((tag) => ({
-              where: { name: tag },
-              create: { name: tag },
+              where: { name: tag.toLowerCase() },
+              create: { name: tag.toLowerCase() },
             })),
           },
         },
@@ -67,47 +67,83 @@ export default async function handler(req, res) {
       console.log(error);
       return res.status(500).json({ error: "Blog post could not be created" });
     }
-  } if (req.method === "GET") {
-    const query = req.query.paramName?.toLowerCase();
-  
-    try {
-      const blogPosts = await prisma.blogPost.findMany({
-        where: {
-          hidden: false,
-          OR: [
-            { title: { contains: query } },
-            { content: { contains: query } },
-            {
-              tags: {
-                some: { name: { contains: query } },
-              },
-            },
-            {
-              codeTemplate: {
-                some: {
-                  title: { contains: query },
-                },
-              },
-            },
+    } 
+
+    else if (req.method === "GET") {
+      const query = req.query.query?.trim().toLowerCase();
+      const tags = req.query.tags
+      ? req.query.tags.split(",").map((tag) => tag.trim().toLowerCase())
+      : null;
+      const codeTemplate = req.query.codeTemplate?.trim().toLowerCase();
+    
+      try {
+        const blogPosts = await prisma.blogPost.findMany({
+          where: {
+            hidden: false,
+            AND: [
+              // General query for title and content
+              ...(query
+                ? [
+                    {
+                      OR: [
+                        { title: { contains: query } },
+                        { content: { contains: query } },
+                      ],
+                    },
+                  ]
+                : []),
+              // Filter by tags
+              ...(tags
+                ? [
+                    {
+                      tags: {
+                        some: {
+                          name: {
+                            in: tags, // Match any of the tags
+                          },
+                        },
+                      },
+                    },
+                  ]
+                : []),
+              ...(codeTemplate
+                ? [
+                    {
+                      codeTemplate: {
+                        some: {
+                          title: {
+                            contains: codeTemplate,
+                          },
+                        },
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+          include: {
+            rating: true,
+            tags: true,
+            codeTemplate: true,
+          },
+          orderBy: [
+            { ratingScore: "desc" },
+            { createdAt: "desc" },
           ],
-        },
-        include: {
-          rating: true,
-          tags: true,
-          codeTemplate: true,
-        },
-        orderBy: { ratingScore: "desc" },
-      });
-  
-      res.status(200).json(blogPosts);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: "Failed to fetch blog posts" });
+          take: 10, // Limit results
+        });
+    
+        res.status(200).json(blogPosts);
+      } catch (error) {
+        console.error("Error fetching blog posts:", error);
+        res.status(500).json({ error: "Failed to fetch blog posts" });
+      }
+    } else {
+      res.status(405).json({ error: "Method not allowed" });
     }
   }
-}  
-
-
+  
+  
 // helper function to extract template ids to query them
 export function getTemplateIds(urls) {
   return urls
@@ -122,3 +158,4 @@ export function getTemplateIds(urls) {
     })
     .filter((id) => id !== null);
 }
+
