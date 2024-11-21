@@ -24,7 +24,7 @@ const SignupForm: React.FC = () => {
     try {
       await register(formData);
       // navigate("/login");
-      router.push("/login");
+      router.push("/login-page");
     } catch (err: any) {
       setError(err.response?.data?.error || "Signup failed");
     }
