@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import CodeArea from "../components/execution/code-area"
 import ExecSettings from "../components/execution/exec-settings"
+import NavBar from "@/components/general/nav-bar";
 
 export default function Execution() {
     const [code, setCode] = useState("");
@@ -30,7 +31,10 @@ export default function Execution() {
       }, []); // Empty dependency array ensures this runs only once
     
     return (
+      <>
+      <NavBar></NavBar>
       <div className=" flex items-center justify-center w-full flex-col md:flex-row p-4">
+        
 
         <div className="p-2">
             <CodeArea fontSize={fontSize} width={codeWidth} language={language} code={code} setCode={setCode}/>   
@@ -40,8 +44,8 @@ export default function Execution() {
             <ExecSettings language={language} setLanguage={setLanguage} code={code} setCode={setCode}/>
         </div>
   
-    </div>
-  
+      </div>
+      </>
     )
 }
 
