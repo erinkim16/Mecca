@@ -294,7 +294,7 @@ async function executeCodeDocker(code, language, stdin) {
     const container = await docker.createContainer({
       Image: image,
       Tty: false,
-      Cmd: ["python3", "your_code2.py"], // Adjust command per language
+      Cmd: ["python3", "your_code.py"], // Adjust command per language
       Binds: [`${dockerPath}:/app`], // Bind current directory
       HostConfig: {
         AutoRemove: true,
@@ -325,7 +325,115 @@ async function executeCodeDocker(code, language, stdin) {
   }
 }
 
+// executeCodeDocker("temp", "python", "temp");
 
-executeCodeDocker("temp", "python", "temp");
+async function executePythonCode(language, code) {
+    const tempDir = path.join(process.cwd(), "PP2", 'temp_code');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+  
+    const { temp_file_dir, filename, relative_path } = getRandomTempFile();
+    let file = filename;
+    let fileName, imageName, command, fileExt;
+  
+    switch (language.toLowerCase()) {
+      case 'python':
+        imageName = 'my-python-env'; // Replace with your Python Docker image name
+        fileExt = 'py';
+        fileName = file + '.' + fileExt;
+        command = ['python3', fileName];
+        break;
+      case 'java':
+        imageName = 'my-java-env'; // Replace with your Java Docker image name
+        fileExt = 'java';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `javac ${fileName} && java ${file}`];
+        // Find and replace main class (has to be the same as filename)
+        code = code.replace(/public class Main/, "public class " + filename);
+        break;
+      // Add more languages as needed
+      default:
+        throw new Error(`Unsupported language: ${language}`);
+    }
+  
+    // Write the code to a file
+    const filePath = path.join(tempDir, fileName);
+    await fs.writeFileSync(filePath, code);
+  
+    // Run the Docker container
+    try {
+      const container = await docker.createContainer({
+        Image: imageName,
+        Cmd: command,
+        Tty: false,
+        HostConfig: {
+            Binds: [`${tempDir}:/app`],  // Make sure this is the correct path
+            AutoRemove: true,
+            Memory: 512 * 1024 * 1024, // Memory limit
+            CpuShares: 1024, // CPU limit
+          },
+        WorkingDir: '/app', // Ensure the working directory inside Docker is correct
+        stdin: true,
+      });
+  
+    await container.start();
+
+    // Attach to the container's output stream
+    const stream = await container.attach({ stream: true, stdout: true, stderr: true });
+    let output = '';
+
+    // Listen for data from the container's output
+    stream.on('data', (chunk) => {
+        // Convert chunk to string and remove non-printable characters using regex
+        output += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    });
+
+    // Timeout to stop the container if it takes too long (e.g., 10 seconds)
+    const timeout = TIMEOUT_TIME; 
+    const timeoutPromise = new Promise((_, reject) => {
+      const timer = setTimeout(async () => {
+        try {
+          console.warn('Container execution timeout, stopping container...');
+          await container.kill(); // Stop the container if it takes too long
+          reject(new Error('Execution timeout: Container stopped'));
+        } catch (err) {
+          reject(new Error('Error stopping container after timeout'));
+        }
+      }, timeout);
+
+      // Clear the timeout if the container finishes execution in time
+      container.wait().then(() => clearTimeout(timer)).catch(() => clearTimeout(timer));
+    });
+
+    // Wait for either container to finish or timeout to trigger
+    await Promise.race([
+      container.wait(), // Wait for the container to finish execution
+      timeoutPromise,   // Wait for the timeout
+    ]);
+
+    // Log the output after the container stops
+    console.log(output);
+
+    // Cleanup
+    cleanUp(tempDir, filePath, filename, language);
+  
+    } catch (err) {
+      console.error('Error executing code:', err);
+      throw err;
+    }
+  }
+  
+    executePythonCode("java", ` public class Main { public static void main(String[] args) {
+                System.out.println("Hello, Java!");
+    }}`);
+  
+function cleanUp(tempDir, filePath, filename, language) {
+    fs.rmSync(filePath);
+
+    if (language === "java") {
+        fs.rmSync(path.join(tempDir, filename) + ".class");
+    }
+}
 
 export { SUPPORTED_LANGUAGES, executeCode, executeCodeDocker };
