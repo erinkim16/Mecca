@@ -40,11 +40,11 @@ export default function ExecSettings(props: ExecSettingsProps) {
     };
 
     const saveCode = async () => {
-        // TODO: Ask Erin how saving needs to work
+        // TODO: for Erin's backend
     };
 
     const forkCode = async () => {
-        // TODO: Ask Erin how this needs to work
+        // TODO:for Erin's backend
     };
     
     return <>  
@@ -66,8 +66,8 @@ export default function ExecSettings(props: ExecSettingsProps) {
         <div className="flex flex-row items-center justify-center">
             <LanguageDropdown language={props.language} setLanguage={props.setLanguage}/>
             <button className="m-4" onClick={() => executeAndUpdateOut()}>Run</button>
-            <button className="m-4 bg-accent border-accentDark">Save</button>
-            <button className="m-4 bg-accent border-accentDark">Fork</button>
+            <button className="m-4 bg-accent border-accentDark" onClick={() => saveCode()}>Save</button>
+            <button className="m-4 bg-accent border-accentDark" onClick={() => forkCode()}>Fork</button>
         </div>
 
         {/* Input and Output Fields */}
