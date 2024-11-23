@@ -25,9 +25,10 @@ export default async function handler(req, res) {
     }
 
     try {
-        const output = await utils.executeCode(code, language, stdin);
+        const output = await utils.executeCodeDocker(language, code, stdin);
         return res.status(200).json({ output });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: error });
     }
 }

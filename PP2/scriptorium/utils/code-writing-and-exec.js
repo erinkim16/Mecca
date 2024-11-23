@@ -6,8 +6,8 @@ import os from 'os';
 import Docker from 'dockerode';
 
 const docker = new Docker();
-const SUPPORTED_LANGUAGES = ["python", "java", "c", "javascript", "c++"];
-const TIMEOUT_TIME = 3000;
+const SUPPORTED_LANGUAGES = ["python", "java", "javascript", "golang"];
+const TIMEOUT_TIME = 5000;
 const MAX_RESOURCES = 50; // 50 MB
 
 
@@ -328,7 +328,7 @@ async function executeCodeDockerOld(code, language, stdin) {
 // executeCodeDocker("temp", "python", "temp");
 
 async function executeCodeDocker(language, code, stdin) {
-    const tempDir = path.join(process.cwd(), "PP2", 'temp_code');
+    const tempDir = path.join(process.cwd(), "..", "..", "temp_code");
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
     }
@@ -348,11 +348,28 @@ async function executeCodeDocker(language, code, stdin) {
         imageName = 'my-java-env'; // Replace with your Java Docker image name
         fileExt = 'java';
         fileName = file + '.' + fileExt;
-        command = ['sh', '-c', `javac ${fileName} && java ${file}`];
+        command = ['sh', '-c', `echo "${stdin}" | javac ${fileName} && echo "${stdin}" | java ${file}`];
         // Find and replace main class (has to be the same as filename)
         code = code.replace(/public class Main/, "public class " + filename);
         break;
-      // Add more languages as needed
+      case 'javascript':
+        imageName = 'my-javascript-env'; 
+        fileExt = 'js';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | node ${fileName}`];
+        break;
+      case 'c':
+        imageName = 'my-c-env'; 
+        fileExt = 'c';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | gcc ${fileName} && echo "${stdin}" | ./${file}`];
+        break;
+      case 'golang':
+        imageName = 'my-golang-env'; 
+        fileExt = 'go';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | go run ${fileName}`];
+        break;
       default:
         throw new Error(`Unsupported language: ${language}`);
     }
@@ -417,11 +434,10 @@ async function executeCodeDocker(language, code, stdin) {
       timeoutPromise,   // Wait for the timeout
     ]);
 
-    // Log the output after the container stops
-    console.log(output);
-
     // Cleanup
     cleanUp(tempDir, filePath, filename, language);
+
+    return output;
   
     } catch (err) {
       console.error('Error executing code:', err);
@@ -429,17 +445,54 @@ async function executeCodeDocker(language, code, stdin) {
     }
   }
   
-executeCodeDocker("python", `
-def main():
-    name = input()
-    age = int(input())
-    print(f"Hello, {name}! You are {age} years old.")
+// executeCodeDocker("python", `
+// def main():
+//     name = input()
+//     age = int(input())
+//     print(f"Hello, {name}! You are {age} years old.")
 
-if __name__ == "__main__":
-    main()
-`, 'Alessia\n20\n');
+// if __name__ == "__main__":
+//     main()
+// `, 'Alessia\n20\n');
   
-// executePythonCode("python", `print("hi")`, 'Alessia\n20\n');
+// executeCodeDocker("java", `
+// import java.util.Scanner;
+
+// public class Main {
+//     public static void main(String[] args) {
+//         Scanner scanner = new Scanner(System.in);
+//         String name = scanner.nextLine();
+//         int age = Integer.parseInt(scanner.nextLine());
+//         System.out.println("Hello, " + name + "! You are " + age + " years old.");
+//     }
+// }
+// `, 'Alessia\n20\n');
+
+// executeCodeDocker("javascript", `
+// const readline = require('readline');
+
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout
+// });
+
+// rl.on('line', (userInput) => {
+//   console.log(\`Hello, \${userInput} from Node.js!\`);
+//   rl.close();
+// });`, 'Alessia\n');
+  
+// executeCodeDocker("golang", `package main
+
+// import "fmt"
+
+// func main() {
+//     fmt.Print("Enter text: ")
+//     var input string
+//     fmt.Scanln(&input)
+//     fmt.Print(input)
+// }`, 'Alessia\n');
+  
+
 
 function cleanUp(tempDir, filePath, filename, language) {
     fs.rmSync(filePath);
