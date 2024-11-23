@@ -271,7 +271,7 @@ function getRandomTempFile() {
     return { temp_file_dir, filename, relative_path };
 }
 
-async function executeCodeDocker(code, language, stdin) {
+async function executeCodeDockerOld(code, language, stdin) {
   try {
     // Map languages to Docker images
     const imageMap = {
@@ -327,7 +327,7 @@ async function executeCodeDocker(code, language, stdin) {
 
 // executeCodeDocker("temp", "python", "temp");
 
-async function executePythonCode(language, code) {
+async function executeCodeDocker(language, code, stdin) {
     const tempDir = path.join(process.cwd(), "PP2", 'temp_code');
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
@@ -342,7 +342,7 @@ async function executePythonCode(language, code) {
         imageName = 'my-python-env'; // Replace with your Python Docker image name
         fileExt = 'py';
         fileName = file + '.' + fileExt;
-        command = ['python3', fileName];
+        command = ['sh', '-c', `echo "${stdin}" | python3 ${fileName}`];
         break;
       case 'java':
         imageName = 'my-java-env'; // Replace with your Java Docker image name
@@ -366,21 +366,26 @@ async function executePythonCode(language, code) {
       const container = await docker.createContainer({
         Image: imageName,
         Cmd: command,
-        Tty: false,
+        Tty: true,
         HostConfig: {
-            Binds: [`${tempDir}:/app`],  // Make sure this is the correct path
-            AutoRemove: true,
-            Memory: 512 * 1024 * 1024, // Memory limit
-            CpuShares: 1024, // CPU limit
-          },
+          Binds: [`${tempDir}:/app`],  // Make sure this is the correct path
+          AutoRemove: true,
+          Memory: 512 * 1024 * 1024, // Memory limit
+          CpuShares: 1024, // CPU limit
+          StdinOnce: true,
+        },
         WorkingDir: '/app', // Ensure the working directory inside Docker is correct
-        stdin: true,
       });
-  
-    await container.start();
+    
+      await container.start();
+    
+      // Attach to the container's output stream
+      const stream = await container.attach({
+        stream: true,
+        stdout: true,
+        stderr: true,
+      });
 
-    // Attach to the container's output stream
-    const stream = await container.attach({ stream: true, stdout: true, stderr: true });
     let output = '';
 
     // Listen for data from the container's output
@@ -424,10 +429,18 @@ async function executePythonCode(language, code) {
     }
   }
   
-    executePythonCode("java", ` public class Main { public static void main(String[] args) {
-                System.out.println("Hello, Java!");
-    }}`);
+executeCodeDocker("python", `
+def main():
+    name = input()
+    age = int(input())
+    print(f"Hello, {name}! You are {age} years old.")
+
+if __name__ == "__main__":
+    main()
+`, 'Alessia\n20\n');
   
+// executePythonCode("python", `print("hi")`, 'Alessia\n20\n');
+
 function cleanUp(tempDir, filePath, filename, language) {
     fs.rmSync(filePath);
 
