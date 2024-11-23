@@ -61,7 +61,7 @@ export const authenticatedFetch = async (
       return authenticatedFetch(url, options);
     } else {
       // Refresh failed, redirect to login
-      window.location.href = "/login";
+      window.location.href = "/user/login";
       throw new Error("Session expired");
     }
   }
