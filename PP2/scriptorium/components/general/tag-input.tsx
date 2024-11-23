@@ -2,10 +2,15 @@
 
 import React, { useState, KeyboardEvent, ChangeEvent } from 'react';
 
-const TagInput: React.FC = () => {
-  // Define the state for tags and input value
-  const [tags, setTags] = useState<string[]>([]); // Tags are stored as an array of strings
-  const [input, setInput] = useState<string>(''); // Input is a string
+interface TagInputProps {
+  tags: string[];
+  setTags: React.Dispatch<React.SetStateAction<string[]>>;
+  input: string;
+  setInput: React.Dispatch<React.SetStateAction<string>>;
+}
+
+export default function TagInput (props: TagInputProps) {
+  const { tags, setTags, input, setInput } = props;
 
   // Function to handle the input change
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -73,6 +78,6 @@ const TagInput: React.FC = () => {
 
     </div>
   );
-};
+}
 
-export default TagInput;
+

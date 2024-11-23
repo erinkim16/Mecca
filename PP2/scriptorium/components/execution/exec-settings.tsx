@@ -13,6 +13,11 @@ export default function ExecSettings(props: ExecSettingsProps) {
     const [output, setOutput] = useState("");
     const [error, setError] = useState("");
     const [stdin, setStdin] = useState("");
+    // Define the state for tags and input value
+    const [tags, setTags] = useState<string[]>([]); 
+    const [input, setInput] = useState<string>('');
+    const [title, setTitle] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
 
     // Hide and Show Certain Elements
     // TODO
@@ -33,19 +38,29 @@ export default function ExecSettings(props: ExecSettingsProps) {
             setOutput(codeOutput.output.toString());
         }
     };
+
+    const saveCode = async () => {
+        // TODO: Ask Erin how saving needs to work
+    };
+
+    const forkCode = async () => {
+        // TODO: Ask Erin how this needs to work
+    };
     
     return <>  
 
         {/* DB Settings */}
         <div>
             <label > Title </label>
-            <input placeholder="Type your title here..."></input>
-
+            <input placeholder="Type your title here..."
+                onChange={(e) => setTitle(e.target.value)}></input>
+ 
             <label> Description </label>
-            <input placeholder="Type your description here..."></input>
+            <input placeholder="Type your description here..."
+                onChange={(e) => setDescription(e.target.value)}></input>
 
             <label>Tags</label>
-            <TagInput />
+            <TagInput tags={tags} setTags={setTags} input={input} setInput={setInput}/>
         </div>
 
         <div className="flex flex-row items-center justify-center">
@@ -91,4 +106,4 @@ async function executeCode(code: string, language: string, stdin: string): Promi
     var data: { output: string, error: string } = await (await response).json();
 
     return data;
-}   
+}  
