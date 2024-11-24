@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
 
   // If accessing protected pages without a token
   if (!token && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/login-page", request.url));
   }
   // testing testing
   // For protected API routes
