@@ -21,7 +21,7 @@ const AvatarSelector: React.FC<AvatarSelectorProps> = ({
       const token = localStorage.getItem("accessToken");
 
       await axios.put(
-        `/api/users/${userId}`,
+        `/api/user/${userId}`,
         { avatar: avatarId },
         {
           headers: { Authorization: `Bearer ${token}` },

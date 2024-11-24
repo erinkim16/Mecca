@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
+import Cookies from "js-cookie";
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
@@ -8,6 +9,9 @@ const LogoutButton: React.FC = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("userId");
+    // Remove tokens from cookies
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
     router.push("/login");
   };
 
