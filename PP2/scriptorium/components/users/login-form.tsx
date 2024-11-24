@@ -10,16 +10,45 @@ const LoginForm: React.FC = () => {
   // const navigate = useNavigate();
   const router = useRouter();
 
+  // const handleSubmitClick = () => {
+  //   console.log("Button clicked");
+  // };
+
   const handleLogin = async (e: React.FormEvent) => {
+    console.log("Form submission triggered");
+
     e.preventDefault();
+    console.log("Form submitted with:", { username, password }); // Add this
+    console.log("Default prevented");
+
     try {
+      console.log("Starting login process...");
       const response = await login({ username, password });
-      localStorage.setItem("accessToken", response.data.accessToken);
-      localStorage.setItem("refreshToken", response.data.refreshToken);
+      console.log("Login response:", response); // Add this to see the full response
+
+      // Check if response.data exists
+      // if (!response?.data) {
+      //   console.error("No data in response:", response);
+      //   throw new Error("Invalid response format");
+      // }
+
+      const { accessToken, refreshToken } = response;
+
+      // Verify tokens exist
+      if (!accessToken || !refreshToken) {
+        console.error("Missing tokens in response:", response);
+        throw new Error("Missing authentication tokens");
+      }
+
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      console.log("Tokens stored, redirecting...");
+
       // navigate("/dashboard"); // Replace with your target page
-      router.push("/dashboard");
+      router.push("/execution");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed");
+      console.error("Login error details:", err); // Add detailed error logging
+      setError(err.response?.data?.message || "Login failedddd");
     }
   };
 

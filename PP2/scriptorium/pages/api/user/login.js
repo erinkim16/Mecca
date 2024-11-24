@@ -40,9 +40,12 @@ export default async function handler(req, res) {
 
       // generate tokens
       const payload = { id: user.id, username: user.username, role: user.role };
+      console.log("Generating tokens for payload:", payload); // Add this
+
       const accessToken = generateAccessToken(payload);
       const refreshToken = generateRefreshToken(payload);
 
+      console.log("Sending successful response"); // Add this
       res.status(200).json({ accessToken, refreshToken });
     } catch (error) {
       console.error("Login error: ", error);

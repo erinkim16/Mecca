@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { authenticatedFetch } from "@/utils/account/api";
 
 const DashboardPage = () => {
+  console.log("in dashboard");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -10,6 +11,7 @@ const DashboardPage = () => {
     const checkAuth = async () => {
       try {
         // Verify the current session
+        console.log("authenticating through middleware");
         await authenticatedFetch("/api/protected");
         setIsLoading(false);
       } catch (error) {

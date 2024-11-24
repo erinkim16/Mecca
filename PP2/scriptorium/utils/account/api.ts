@@ -8,20 +8,29 @@ const api = axios.create({
 });
 
 export const login = async (data: { username: string; password: string }) => {
+  console.log("Login function called with:", data);
+
   try {
+    console.log(
+      "Making API request to:",
+      "http://localhost:3000/api/user/login"
+    );
     const response = await api.post("/user/login", data);
+    console.log("API Response:", response); // Debug log
     return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      throw new Error(error.response.data.message || "Login failed");
-    } else if (error.request) {
-      // The request was made but no response was received
-      throw new Error("No response received from the server");
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      throw new Error(error.message || "An unknown error occurred");
-    }
+  } catch (error) {
+    console.error("Login API error:", error); // Debug log
+    // if (error.response) {
+    //   // The request was made and the server responded with a status code
+    //   throw new Error(error.response.data.message || "Login failed");
+    // } else if (error.request) {
+    //   // The request was made but no response was received
+    //   throw new Error("No response received from the server");
+    // } else {
+    //   // Something happened in setting up the request that triggered an Error
+    //   throw new Error(error.message || "An unknown error occurred");
+    // }
+    throw error;
   }
 };
 
@@ -42,6 +51,7 @@ export const authenticatedFetch = async (
   url: string,
   options: RequestInit = {}
 ): Promise<any> => {
+  console.log("authenticating...");
   const token = localStorage.getItem("accessToken");
 
   const response = await fetch(url, {

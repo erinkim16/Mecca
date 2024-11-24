@@ -21,6 +21,7 @@ export function middleware(request: NextRequest) {
     );
   }
 
+  console.log("getting next page in middleware: ", request);
   return NextResponse.next();
 }
 
