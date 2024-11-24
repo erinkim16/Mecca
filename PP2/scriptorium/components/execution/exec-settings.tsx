@@ -41,6 +41,10 @@ export default function ExecSettings(props: ExecSettingsProps) {
 
     const saveCode = async () => {
         // TODO: for Erin's backend
+        // How to access things youll need to save
+        let code = props.code;
+        let language = props.language;
+        // tags, title and description can be accessed like this (thats literally the variable names)
     };
 
     const forkCode = async () => {
