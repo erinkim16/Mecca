@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import ProfileEditForm from "@/components/profile/profile-form";
-import AvatarSelector from "@/components/profile/avatar";
+import AvatarSelector from "@/components/profile/avatar-selection";
 import LogoutButton from "@/components/profile/logout";
 
 const EditProfilePage = () => {
@@ -9,6 +9,7 @@ const EditProfilePage = () => {
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
+    console.log("userid editing: ", storedUserId);
     if (storedUserId) {
       setUserId(storedUserId); // Parse userId as an integer
     }

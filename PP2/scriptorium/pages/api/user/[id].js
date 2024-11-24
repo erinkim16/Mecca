@@ -27,6 +27,10 @@ export default async function handler(req, res) {
       return res.status(401).json({ message: "Authorization token missing" });
     }
 
+    // const token = authHeader.startsWith("Bearer ")
+    // ? authHeader.split(" ")[1]
+    // : authHeader;
+
     const decoded = verifyAccessToken(authHeader);
     if (!decoded) {
       return res
@@ -37,25 +41,48 @@ export default async function handler(req, res) {
     const { firstName, lastName, email, avatar } = req.body;
 
     try {
-      const dataForUpdate = {};
+      // const dataForUpdate = {};
 
+      // if (firstName !== undefined) {
+      //   dataForUpdate.firstName = firstName;
+      // }
+      // if (lastName !== undefined) {
+      //   dataForUpdate.lastName = lastName;
+      // }
+      // if (email !== undefined) {
+      //   dataForUpdate.email = email;
+      // }
+      // if (avatar !== undefined) {
+      //   dataForUpdate.avatar = avatar;
+      // }
+      const user = await prisma.user.findUnique({
+        where: { id: parseInt(id) },
+      });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      console.log("user for edit:", user);
+
+      // Prepare the data for update, retaining existing values if input is empty
+      const dataForUpdate = {};
       if (firstName !== undefined) {
-        dataForUpdate.firstName = firstName;
+        dataForUpdate.firstName = firstName !== "" ? firstName : user.firstName;
       }
       if (lastName !== undefined) {
-        dataForUpdate.lastName = lastName;
+        dataForUpdate.lastName = lastName !== "" ? lastName : user.lastName;
       }
       if (email !== undefined) {
-        dataForUpdate.email = email;
+        dataForUpdate.email = email !== "" ? email : user.email;
       }
       if (avatar !== undefined) {
-        dataForUpdate.avatar = avatar;
+        dataForUpdate.avatar = avatar !== "" ? avatar : user.avatar;
       }
 
       const updatedUser = await prisma.user.update({
         where: { id: parseInt(id) },
         data: dataForUpdate,
       });
+      console.log("edited info:", updatedUser);
 
       res.status(200).json({
         message: "Profile updated successfully",
@@ -67,6 +94,47 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error("Profile update error: ", error);
       res.status(500).json({ error: "Failed to update profile" });
+    }
+  } else if (req.method === "GET") {
+    console.log("started retrieving profile");
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      console.log("auth token missing");
+      return res.status(401).json({ message: "Authorization token missing" });
+    }
+
+    const decoded = verifyAccessToken(authHeader);
+
+    if (!decoded) {
+      console.log("invalid or expired access token");
+      return res
+        .status(401)
+        .json({ message: "Invalid or expired access token" });
+    }
+
+    const userId = decoded.id;
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          username: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          avatar: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ message: "Failed to fetch user data" });
     }
   } else {
     return res.status(405).json({ error: "Method not allowed" });

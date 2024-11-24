@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-// for pushing test
+// try debugging with authtoken header bearer thing
 export function middleware(request: NextRequest) {
   // Get the token from authorization header
   const token = request.headers.get("authorization")?.split(" ")[1];

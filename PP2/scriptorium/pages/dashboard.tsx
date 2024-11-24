@@ -3,19 +3,21 @@ import { useRouter } from "next/router";
 import { authenticatedFetch } from "@/utils/account/api";
 
 const DashboardPage = () => {
-  console.log("in dashboard");
+  console.log("Rendering DashboardPage");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Verify the current session
-        console.log("authenticating through middleware");
+        console.log("Verifying session through authenticatedFetch");
         await authenticatedFetch("/api/protected");
+        console.log("Session valid, access granted");
         setIsLoading(false);
       } catch (error) {
-        router.push("/login");
+        console.error("Authentication failed:", error);
+        setIsLoading(false); // Ensure loading stops on error
+        router.push("/login"); // Redirect to login page
       }
     };
 

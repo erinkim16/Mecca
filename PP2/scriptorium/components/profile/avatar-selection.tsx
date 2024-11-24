@@ -24,7 +24,7 @@ const AvatarSelector: React.FC<AvatarSelectorProps> = ({
         `/api/users/${userId}`,
         { avatar: avatarId },
         {
-          headers: { Authorization: token },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 

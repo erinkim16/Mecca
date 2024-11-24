@@ -28,10 +28,10 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ userId }) => {
       const token = localStorage.getItem("accessToken");
 
       await axios.put(
-        `/api/users/${userId}`,
+        `/api/user/${userId}`,
         { ...formData },
         {
-          headers: { Authorization: token },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
