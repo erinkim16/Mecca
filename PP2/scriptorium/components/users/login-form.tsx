@@ -32,7 +32,7 @@ const LoginForm: React.FC = () => {
       //   throw new Error("Invalid response format");
       // }
 
-      const { accessToken, refreshToken } = response;
+      const { payload, accessToken, refreshToken } = response;
 
       // Verify tokens exist
       if (!accessToken || !refreshToken) {
@@ -40,8 +40,10 @@ const LoginForm: React.FC = () => {
         throw new Error("Missing authentication tokens");
       }
 
+      const userId: number = payload.id;
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("userId", userId.toString());
       console.log("Tokens stored, redirecting...");
 
       // navigate("/dashboard"); // Replace with your target page
