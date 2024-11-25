@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-// for pushing test
+// try debugging with authtoken header bearer thing
 export function middleware(request: NextRequest) {
+  console.log("Cookies received in middleware:", request.cookies);
   // Get the token from authorization header
-  const token = request.headers.get("authorization")?.split(" ")[1];
+  const token = request.cookies.get("accessToken");
+  // const token = request.headers.get("authorization");
+  console.log("Middleware: token from cookie =", token);
 
   // If accessing protected pages without a token
   if (!token && request.nextUrl.pathname.startsWith("/dashboard")) {
+    console.log("token for middleware auth: ", token);
+    console.log("Unauthorized access to dashboard, redirecting...");
+
+    // alert("You must be logged in to access this page."); this is wrong, but i do want to add an alert later
+
     return NextResponse.redirect(new URL("/login-page", request.url));
   }
   // testing testing

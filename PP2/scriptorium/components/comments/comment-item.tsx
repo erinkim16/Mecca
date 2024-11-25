@@ -1,92 +1,99 @@
-// allow users to view the comment
-
 import React, { useState } from "react";
-import CommentForm from "./add-comment";
+import ReportModal from "../general/reports";
 
 interface Comment {
-    id: number;
-    text: string;
-    author: string;
-    rating: number;
-    parentId?: number;
-    hidden: boolean;
-    replies?: Comment[];
+  id: number;
+  text: string;
+  rating: number;
+  author: {
+    username: string;
+  };
+  replies?: Comment[];
 }
 
 interface CommentItemProps {
-    comment: Comment;
-    onReply: (text: string, parentId: number) => void;
-    onRate: (id: number, rating: number) => void;
-    onEdit: (id: number, text: string) => void;
-    onHide: (id: number) => void;
+  comment: Comment;
+  onReply: (text: string, parentId: number) => void;
+  onRate: (id: number, rating: number) => void;
+  onEdit: (id: number, text: string) => void;
+  onHide: (id: number) => void;
 }
 
-const CommentItem: React.FC<CommentItemProps> = ({  comment,
-    onReply,
-    onRate,
-    onEdit,
-    onHide, }) => {
-    const [showReplyForm, setShowReplyForm] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editText, setEditText] = useState(comment.text);
+const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate }) => {
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [isReportModalOpen, setReportModalOpen] = useState(false);
 
-    const handleReply = (text: string) => {
-        onReply(text, comment.id);
-        setShowReplyForm(false);
-    };
+  const handleUpvote = () => onRate(comment.id, 1); // +1 for upvote
+  const handleDownvote = () => onRate(comment.id, -1); // -1 for downvote
 
-    const handleEdit = () => {
-        onEdit(comment.id, editText);
-        setIsEditing(false);
-      };
+  const handleReplySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onReply(replyText, comment.id);
+    setReplyText("");
+    setIsReplying(false);
+  };
 
-    if (comment.hidden) {
+  const handleReportSubmit = async (reason: string, explanation: string) => {
+    try {
+      const response = await fetch(`/api/reports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          targetId: comment.id,
+          targetType: "Comment",
+          reason,
+          explanation,
+        }),
+      });
 
-        return <p>This comment is hidden.</p>
+      if (response.ok) {
+        alert("Your report has been submitted. Thank you!");
+      } else {
+        const error = await response.json();
+        alert(`Failed to submit report: ${error.error}`);
+      }
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      alert("An error occurred while submitting your report.");
     }
 
-    return (
-        <div className="comment-item">
-        <p>
-          <strong>{comment.author}</strong> ({comment.rating} upvotes):{" "}
-          {isEditing ? (
-            <textarea
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-            />
-          ) : (
-            comment.text
-          )}
-        </p>
-        {isEditing ? (
-          <button onClick={handleEdit}>Save</button>
-        ) : (
-          <>
-            <button onClick={() => onRate(comment.id, 1)}>Upvote</button>
-            <button onClick={() => onRate(comment.id, -1)}>Downvote</button>
-            <button onClick={() => setShowReplyForm(!showReplyForm)}>
-              Reply
-            </button>
-            <button onClick={() => setIsEditing(true)}>Edit</button>
-            <button onClick={() => onHide(comment.id)}>Hide</button>
-          </>
-        )}
-        {showReplyForm && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const input = e.currentTarget.elements.namedItem(
-                "replyInput"
-              ) as HTMLInputElement;
-              handleReply(input.value);
-            }}
-          >
-            <textarea name="replyInput" placeholder="Write your reply..." />
-            <button type="submit">Submit</button>
-          </form>
-        )}
+    setReportModalOpen(false);
+  };
+
+  return (
+    <div className="comment-item">
+      <p>
+        <strong>{comment.author.username}</strong>: {comment.text}
+      </p>
+      <div className="comment-actions">
+        <button onClick={handleUpvote}>👍 Upvote</button>
+        <span>{comment.rating}</span>
+        <button onClick={handleDownvote}>👎 Downvote</button>
+        <button onClick={() => setIsReplying(!isReplying)}>Reply</button>
+        <button onClick={() => setReportModalOpen(true)}>Report</button>
       </div>
-      );
+      {isReplying && (
+        <form onSubmit={handleReplySubmit} className="reply-form">
+          <textarea
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            placeholder="Write your reply..."
+            required
+          />
+          <button type="submit">Submit Reply</button>
+        </form>
+      )}
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        onSubmit={handleReportSubmit}
+        targetType="Comment"
+      />
+    </div>
+  );
 };
 
 export default CommentItem;

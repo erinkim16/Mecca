@@ -1,4 +1,5 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const api = axios.create({
   baseURL: "http://localhost:3000/api", // Replace with your backend URL
@@ -52,7 +53,8 @@ export const authenticatedFetch = async (
   options: RequestInit = {}
 ): Promise<any> => {
   console.log("authenticating...");
-  const token = localStorage.getItem("accessToken");
+  const token =
+    localStorage.getItem("accessToken") || Cookies.get("accessToken");
 
   const response = await fetch(url, {
     ...options,
@@ -86,7 +88,8 @@ export const authenticatedFetch = async (
 
 // Match your existing refresh token endpoint
 async function refreshAccessToken() {
-  const refreshToken = localStorage.getItem("refreshToken");
+  const refreshToken =
+    localStorage.getItem("refreshToken") || Cookies.get("refreshToken");
   if (!refreshToken) return false;
 
   try {

@@ -1,34 +1,55 @@
-import React from "react"
-import { JSONContent } from "@tiptap/core"; // If using TipTap
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import React from "react";
 
-interface BlogPostProps {
-    title: string;
-    author: string;
-    tags: string[];
-    content: string;
-    createdAt: string;
+interface BlogPost {
+  title: string;
+  tags: string[];
+  content: string;
+  author: { username: string }; // Ensure this matches the backend's response
+  createdAt: string;
 }
 
-const BlogPostView: React.FC<BlogPostProps> = ({ title, author, tags, content, createdAt }) => {
-    const parsedContent: JSONContent = JSON.parse(content);
+interface BlogPostViewProps {
+  blog: BlogPost;
+}
 
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: parsedContent,
-    editable: false, // Set to read-only
+const BlogPostView: React.FC<BlogPostViewProps> = ({ blog }) => {
+  const { title, tags, content, author, createdAt } = blog;
+
+  const formattedDate = new Date(createdAt).toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
   });
 
-    return (
-        <div className='blog-post'>
-            <h1 className='title'>{title}</h1>
-            <p className="author">
-                By <strong>{author}</strong> on {new Date(createdAt).toLocaleDateString()}
-            </p>
-            {editor && <EditorContent editor={editor} />}
-        </div>
-    );
+  let parsedContent: string;
+  try {
+    parsedContent = JSON.parse(content)?.body || content;
+  } catch {
+    parsedContent = content;
+  }
+
+  return (
+    <div className="blog-post">
+      <h1>{title}</h1>
+      <p className="meta-info">
+        By <strong>{author.username || "Unknown Author"}</strong> | Published on: {formattedDate}
+      </p>
+      <div className="tags">
+        {tags.map((tag, index) => (
+          <span key={index} className="tag">
+            #{tag}
+          </span>
+        ))}
+      </div>
+      <div className="content">
+        <p>{parsedContent}</p>
+      </div>
+    </div>
+  );
 };
 
 export default BlogPostView;

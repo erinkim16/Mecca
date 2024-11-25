@@ -46,7 +46,7 @@ export default async function handler(req, res) {
       const refreshToken = generateRefreshToken(payload);
 
       console.log("Sending successful response"); // Add this
-      res.status(200).json({ accessToken, refreshToken });
+      res.status(200).json({ payload, accessToken, refreshToken });
     } catch (error) {
       console.error("Login error: ", error);
       res.status(500).json({ error: "Login failed" });

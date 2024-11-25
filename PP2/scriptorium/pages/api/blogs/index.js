@@ -12,40 +12,40 @@ export default async function handler(req, res) {
     const user = verifyAccessToken(authHeader);
   
     if (!user) {
+      console.log("User not logged in");
       return res
         .status(401)
         .json({ error: "Please sign in to create a blog post" });
     }
-  
-    const { title, description, content, tags, codeTemplates } = req.body;
+   
+    const { title, description, content, tags = [], codeTemplates = [] } = req.body;
   
     if (!title || !description || !content) {
-      return res
-        .status(400)
-        .json({ error: "Blog posts must have a title, description, and valid content." });
+      return res.status(400).json({
+        error: "Blog posts must have a title, description, and valid content.",
+      });
     }
   
     try {
-      const templateIds = getTemplateIds(codeTemplates);
+      const templateIds = getTemplateIds(codeTemplates.map((url) => url.trim()));
       const templates = await prisma.codeTemplate.findMany({
         where: {
-          id: {
-            in: templateIds,
-          },
+          id: { in: templateIds },
         },
       });
   
-      if (templates.length != codeTemplates.length) {
-        return res
-          .status(400)
-          .json({ error: "Some code templates do not exist. Please check URLs." });
+      if (templates.length !== templateIds.length) {
+        return res.status(400).json({
+          error: "Some code templates do not exist. Please check URLs.",
+        });
       }
   
       const blog = await prisma.blogPost.create({
         data: {
           title,
           description,
-          content, // Save TipTap JSON content here
+          createdAt: new Date(),
+          content: typeof content === "string" ? content : JSON.stringify(content),
           codeTemplate: {
             connect: templates.map((template) => ({ id: template.id })),
           },
@@ -59,17 +59,29 @@ export default async function handler(req, res) {
             })),
           },
         },
-        include: { tags: true, codeTemplate: true },
+        include: {
+          author: {
+            select: {
+              username: true, // Include only the username
+            },
+          },
+          tags: true,
+          codeTemplate: true,
+        },
       });
+
+      // Ensure comments are explicitly set as an empty array
+      const response = {
+        ...blog,
+        comments: [], // Explicitly set comments to an empty array
+      };
   
-      res.status(200).json(blog);
+      res.status(200).json(response);
     } catch (error) {
-      console.log(error);
+      console.error("Error creating blog post:", error);
       return res.status(500).json({ error: "Blog post could not be created" });
     }
-    } 
-
-    else if (req.method === "GET") {
+  } else if (req.method === "GET") {
       const query = req.query.query?.trim().toLowerCase();
       const tags = req.query.tags
       ? req.query.tags.split(",").map((tag) => tag.trim().toLowerCase())
@@ -92,7 +104,6 @@ export default async function handler(req, res) {
                     },
                   ]
                 : []),
-              // Filter by tags
               ...(tags
                 ? [
                     {
