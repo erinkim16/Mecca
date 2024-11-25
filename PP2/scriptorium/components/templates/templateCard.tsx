@@ -1,3 +1,39 @@
+// // /components/TemplateCard.tsx
+// import React from "react";
+
+// type Template = {
+//   id: number;
+//   title: string;
+//   explanation: string;
+//   tags: { name: string }[];
+//   language: string;
+// };
+
+// type TemplateCardProps = {
+//   template: Template;
+// };
+
+// const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
+//   return (
+//     <div className="template-card">
+//       <h3>{template.title}</h3>
+//       <p>{template.explanation}</p>
+//       <div>
+//         <strong>Tags:</strong>
+//         {template.tags.map((tag) => (
+//           <span key={tag.name} className="tag">
+//             {tag.name}
+//           </span>
+//         ))}
+//       </div>
+//       <p>
+//         <strong>Language:</strong> {template.language}
+//       </p>
+//     </div>
+//   );
+// };
+
+// export default TemplateCard;
 import React from "react";
 
 // Define the types for the props
