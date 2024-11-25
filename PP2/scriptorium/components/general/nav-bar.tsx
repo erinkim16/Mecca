@@ -24,7 +24,7 @@ function NavBar() {
             {/* Desktop navigation links */}
             <div id="nav-links" className="hidden md:flex items-center space-x-6">
                 <a href="/template-search" className="text-gray-200 hover:text-white transition duration-300">Code Templates</a>
-                <a href="/blog" className="text-gray-200 hover:text-white transition duration-300">Blogs</a> 
+                <a href="/blogs" className="text-gray-200 hover:text-white transition duration-300">Blogs</a> 
                 <div className="relative">
                     <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="px-3 py-2">
                         Create
@@ -67,7 +67,7 @@ function NavBar() {
                 >
                     {/* Mobile versions of the desktop links */}
                     <a href="/template-search" className="block text-gray-200 hover:text-white text-xl transition duration-300">Code Templates</a>
-                    <a href="/blog" className="block text-gray-200 hover:text-white text-xl transition duration-300">Blogs</a>
+                    <a href="/blogs" className="block text-gray-200 hover:text-white text-xl transition duration-300">Blogs</a>
                     <a href="/execution" className="block text-gray-200 hover:text-white text-xl transition duration-300">Code</a>
                     <a href="/blog-create" className="block text-gray-200 hover:text-white text-xl transition duration-300">Create Blog</a>
                     
