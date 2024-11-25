@@ -57,7 +57,7 @@ select {
   background-size: 1.2rem;
 }
 
-input, .exec-output {
+input, .exec-output, textarea {
   @apply w-full p-4 border border-gray-200 rounded-md bg-white text-gray-700 shadow-md;
   box-sizing: border-box;
 }
