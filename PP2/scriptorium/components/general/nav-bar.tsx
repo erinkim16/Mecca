@@ -1,11 +1,13 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import LogoutButton from '@/components/profile/logout';
 
 function NavBar() {
     // State to manage menu visibility on small screens
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [userPfp, setUserPfp] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isPfpOpen, setIsPfpOpen] = useState(false);
 
     // TODO: on render, check if admin, then show admin page
     // TODO: get current user and update pfp
@@ -13,6 +15,10 @@ function NavBar() {
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
+    };
+
+    const togglePfpDropdown = () => {
+        setIsPfpOpen(!isPfpOpen);
     };
 
     const fetchUserData = async () => {
@@ -78,13 +84,32 @@ function NavBar() {
                 </div>
             </div>
 
-            {/* Profile Picture - Now visible on all screen sizes */}
-            <div className="hidden md:block flex items-center space-x-4">
+            <div className="relative hidden md:block flex items-center space-x-4">
                 <img
                     src={`/avatars/${userPfp}.png`}
                     alt="Profile"
-                    className="h-12 w-12 rounded-full"
+                    className="h-12 w-12 rounded-full cursor-pointer"
+                    onClick={togglePfpDropdown} // Toggle dropdown on click
                 />
+
+                {/* Dropdown Menu */}
+                {isPfpOpen && (
+                    <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-md">
+                        <a
+                            href="/profilepage"
+                            className="block px-4 py-2 text-gray-700 hover:text-white transition duration-300"
+                        >
+                            View Profile
+                        </a>
+                        <a
+                            href="/profile"
+                            className="block px-4 py-2 text-gray-700 hover:text-white transition duration-300"
+                        >
+                            Edit Profile
+                        </a>
+                        <LogoutButton></LogoutButton>
+                    </div>
+                )}
             </div>
 
             {/* Hamburger menu icon for small screens */}
@@ -126,6 +151,10 @@ function NavBar() {
                     >
                         Close Menu
                     </button>
+
+                    < LogoutButton />
+
+
                 </div>
             )}
         </nav>

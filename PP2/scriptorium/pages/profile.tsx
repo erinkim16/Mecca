@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import ProfileEditForm from "@/components/profile/profile-form";
 import AvatarSelector from "@/components/profile/avatar-selection";
 import LogoutButton from "@/components/profile/logout";
+import NavBar from "@/components/general/nav-bar";
 
 const EditProfilePage = () => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -20,6 +21,8 @@ const EditProfilePage = () => {
   }
 
   return (
+    <>
+    <NavBar />
     <div className="edit-profile-page">
       <h1>Edit Profile</h1>
       <ProfileEditForm userId={userId} currentAvatar={avatar} />
@@ -29,7 +32,7 @@ const EditProfilePage = () => {
       <style jsx>{`
         .edit-profile-page {
           max-width: 600px;
-          margin: 0 auto;
+          margin: 2vw auto;
           text-align: center;
         }
         h1 {
@@ -37,6 +40,8 @@ const EditProfilePage = () => {
         }
       `}</style>
     </div>
+    </>
+    
   );
 };
 
