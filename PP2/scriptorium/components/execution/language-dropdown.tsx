@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
+const SUPPORTED_LANGUAGES = ["python", "java", "javascript", "golang", "elixir", "perl", "php", "ruby", "rust", "swift"];
+
 interface LanguageDropdownProps {
     language?: string;
     setLanguage: React.Dispatch<React.SetStateAction<string>>
@@ -18,11 +20,11 @@ export default function LanguageDropdown(props: LanguageDropdownProps) {
         <div>
             <label>Language:</label>
             <select id="language" name="language" onChange={handleLanguageChange}>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-                <option value="c">C</option>
-                <option value="c++">C++</option>
-                <option value="javascript">JavaScript</option>
+                {SUPPORTED_LANGUAGES.map((language) => (
+                    <option key={language} value={language}>
+                        {language.charAt(0).toUpperCase() + language.slice(1)}
+                    </option>
+                ))}
             </select>
         </div>
     )

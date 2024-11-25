@@ -6,7 +6,7 @@ import os from 'os';
 import Docker from 'dockerode';
 
 const docker = new Docker();
-const SUPPORTED_LANGUAGES = ["python", "java", "javascript", "golang"];
+const SUPPORTED_LANGUAGES = ["python", "java", "javascript", "golang", "elixir", "perl", "php", "ruby", "rust", "swift"];
 const TIMEOUT_TIME = 5000;
 const MAX_RESOURCES = 50; // 50 MB
 
@@ -358,17 +358,47 @@ async function executeCodeDocker(language, code, stdin) {
         fileName = file + '.' + fileExt;
         command = ['sh', '-c', `echo "${stdin}" | node ${fileName}`];
         break;
-      case 'c':
-        imageName = 'my-c-env'; 
-        fileExt = 'c';
-        fileName = file + '.' + fileExt;
-        command = ['sh', '-c', `echo "${stdin}" | gcc ${fileName} && echo "${stdin}" | ./${file}`];
-        break;
       case 'golang':
         imageName = 'my-golang-env'; 
         fileExt = 'go';
         fileName = file + '.' + fileExt;
         command = ['sh', '-c', `echo "${stdin}" | go run ${fileName}`];
+        break;
+      case 'elixir':
+        imageName = 'my-elixir-env'; 
+        fileExt = 'ex';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | elixir ${fileName}`];
+        break;
+      case 'perl':
+        imageName = 'my-perl-env'; 
+        fileExt = 'pl';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | perl ${fileName}`];
+        break;
+      case 'php':
+        imageName = 'my-php-env'; 
+        fileExt = 'php';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | php ${fileName}`];
+        break;
+      case 'ruby':
+        imageName = 'my-ruby-env'; 
+        fileExt = 'rb';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | ruby ${fileName}`];
+        break;
+      case 'rust':
+        imageName = 'my-rust-env'; 
+        fileExt = 'rs';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | cargo run ${fileName}`];
+        break;
+      case 'swift':
+        imageName = 'my-swift-env'; 
+        fileExt = 'swift';
+        fileName = file + '.' + fileExt;
+        command = ['sh', '-c', `echo "${stdin}" | swift ${fileName}`];
         break;
       default:
         throw new Error(`Unsupported language: ${language}`);

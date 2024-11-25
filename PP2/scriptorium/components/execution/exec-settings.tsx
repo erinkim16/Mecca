@@ -77,13 +77,12 @@ export default function ExecSettings(props: ExecSettingsProps) {
         {/* Input and Output Fields */}
         <div className="flex flex-col w-full">
             <label htmlFor="input">Input:</label>
-            <input
+            <textarea
                 id="input"
-                type="text"
                 className="w-full"
                 value={stdin}
                 onChange={(e) => setStdin(e.target.value)}
-            />
+            ></textarea>
 
             <label htmlFor="output">Output:</label>
             <div id="output" className="w-full">
