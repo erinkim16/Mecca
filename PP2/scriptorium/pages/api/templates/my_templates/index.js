@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { verifyAccessToken } from "../../../utils/account/auth";
+import { verifyAccessToken } from "../../../../utils/account/auth";
 
 // searches through user's templates only
 const prisma = new PrismaClient();
