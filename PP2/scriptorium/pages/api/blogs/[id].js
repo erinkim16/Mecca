@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const authHeader = req.headers.authorization;
   const user = verifyAccessToken(authHeader);
 
-  if (!user) {
+  if (!user && (req.method === "PUT" || req.method === "DELETE")) {
     return res.status(401).json({ error: "Unauthorized user" });
   }
 
@@ -22,19 +22,59 @@ export default async function handler(req, res) {
     return await editBlog(req, res, id, user);
   } else if (req.method === "DELETE") {
     return await deleteBlog(req, res, id, user);
+  } else if (req.method === "GET") {
+    return await getBlog(req, res, id);
   } else {
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
 
-/**
- * Function to edit the blog
- * @param {*} req - request
- * @param {*} res - responst
- * @param {Int} id  - the blog id to edit
- * @param {User} user - user to check if the user is the one who authored the blog
- * @returns
- */
+async function getBlog(req, res, id) {
+  try {
+    const blogPost = await prisma.blogPost.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true, // Include the username field
+          },
+        },
+        tags: {
+          select: {
+            name: true,
+          },
+        },
+        codeTemplate: {
+          select: {
+            id: true,
+            title: true,
+            explanation: true,
+            codeId: true,
+          },
+        },
+        rating: true, // Include ratings if necessary
+      },
+    });
+
+    if (!blogPost) {
+      return res.status(404).json({ error: "Blog post not found" });
+    }
+
+    const transformedBlogPost = {
+      ...blogPost,
+      author: blogPost.author?.username || "Unknown Author", // Use username instead of email
+      tags: blogPost.tags.map((tag) => tag.name),
+      createdAt: new Date(blogPost.createdAt).toISOString(), // Format as ISO string
+    };
+
+    return res.status(200).json(transformedBlogPost);
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    return res.status(500).json({ error: "Failed to fetch blog post" });
+  }
+}
+
 
 async function editBlog(req, res, id, user) {
   try {
