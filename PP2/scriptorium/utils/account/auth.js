@@ -38,7 +38,7 @@ export function verifyAccessToken(token) {
   try {
     return jwt.verify(token, JWT_ACCESS_TOKEN_SECRET);
   } catch (error) {
-    console.error("Access token verification error:", error);
+    console.error("authentication: not verified");
     return null;
   }
 }

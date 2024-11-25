@@ -324,7 +324,7 @@ export default async function handler(req, res) {
         // Fetch paginated results
         const templates = await prisma.codeTemplate.findMany({
           where: whereCondition,
-          include: { tags: true, code: true },
+          include: { tags: true, code: true, author: true },
           skip: skip,
           take: parsedLimit,
         });
