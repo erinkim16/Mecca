@@ -3,6 +3,7 @@ import SearchBar from "@/components/templates/searchBar";
 import Pagination from "@/components/general/pagination";
 import TemplateList from "@/components/templates/templateList";
 import axios from "axios";
+import NavBar from "@/components/general/nav-bar";
 
 const CodeSearchPage: React.FC = () => {
   console.log(SearchBar); // Should show a function, not an object
@@ -61,6 +62,7 @@ const CodeSearchPage: React.FC = () => {
 
   return (
     <div className="code-search-page">
+      <NavBar />
       <h1>Code Search</h1>
       <SearchBar onSearch={handleSearch} />
       <TemplateList templates={templates} />

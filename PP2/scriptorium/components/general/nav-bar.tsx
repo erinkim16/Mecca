@@ -32,7 +32,7 @@ function NavBar() {
                     {isMenuOpen && (
                         <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-md">
                             <a href="/execution" className="block px-4 py-2 text-gray-700 hover:text-white transition duration-300">Code</a>
-                            <a href="/blog-create" className="block px-4 py-2 text-gray-700 hover:text-white transition duration-300">Blog</a>
+                            <a href="/blogs/blog-editor" className="block px-4 py-2 text-gray-700 hover:text-white transition duration-300">Blog</a>
                         </div>
                     )}
                 </div>
