@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
-      const { blogPostId } = req.query;
+      const { blogPostId, sortBy } = req.query;
 
       if (!blogPostId || isNaN(parseInt(blogPostId))) {
         return res.status(400).json({ error: "Invalid or missing blogPostId" });
@@ -22,10 +22,17 @@ export default async function handler(req, res) {
           blogPostId: parsedBlogPostId,
           parentId: null, // Fetch only top-level comments
         },
+        orderBy: 
+        sortBy === "ratingHigh"
+          ? { ratingScore: "desc" } // Highest to lowest rating
+          : sortBy === "ratingLow"
+          ? { ratingScore: "asc" } // Lowest to highest rating
+          : { createdAt: "desc" }, // Default: Newest to oldest
         select: {
           id: true,
           content: true, // Include the content of the comment
           ratingScore: true,
+          createdAt: true,
           author: {
             select: {
               id: true,
@@ -33,6 +40,7 @@ export default async function handler(req, res) {
             },
           },
           replies: {
+            orderBy: { createdAt: "desc" },
             select: {
               id: true,
               content: true, // Include content for replies as well
@@ -45,9 +53,6 @@ export default async function handler(req, res) {
               },
             },
           },
-        },
-        orderBy: {
-          ratingScore: "desc", // Sort by rating score in descending order
         },
         skip,
         take: limit,
@@ -93,7 +98,9 @@ export default async function handler(req, res) {
       if (!content || typeof content !== "string" || content.trim() === "") {
         return res.status(400).json({ error: "Content cannot be empty" });
       }
+      
 
+      // when you create the comment -> check if you can send the username when creating one to fix the submit issue?
       const comment = await prisma.comment.create({
         data: {
           content: content.trim(),

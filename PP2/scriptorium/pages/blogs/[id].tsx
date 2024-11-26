@@ -1,7 +1,7 @@
 import React from "react";
 import { GetServerSideProps } from "next";
 import BlogComments from "@/components/blogs/blog-comments";
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ interface BlogPost {
   title: string;
   description: string;
   content: string;
-  tags: { name: string }[];
+  tags: { id: number; name: string }[]; // Ensure `id` for unique key
   author: { username: string };
   createdAt: string;
 }
@@ -35,7 +35,7 @@ const BlogPostPage: React.FC<{ blog: BlogPost }> = ({ blog }) => {
       <div className="content">{blog.content}</div>
       <div className="tags">
         {blog.tags.map((tag) => (
-          <span key={tag.name} className="tag">
+          <span key={tag.id} className="tag">
             #{tag.name}
           </span>
         ))}
@@ -49,28 +49,37 @@ const BlogPostPage: React.FC<{ blog: BlogPost }> = ({ blog }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { id } = context.params!;
+  const { id } = context.params || {};
 
-  const blog = await prisma.blogPost.findUnique({
-    where: { id: parseInt(id as string, 10) },
-    include: {
-      tags: true,
-      author: { select: { username: true } },
-    },
-  });
-
-  if (!blog) {
+  if (!id || isNaN(Number(id))) {
     return { notFound: true };
   }
 
-  return {
-    props: {
-      blog: {
-        ...blog,
-        createdAt: blog.createdAt.toISOString(),
+  try {
+    const blog = await prisma.blogPost.findUnique({
+      where: { id: parseInt(id as string, 10) },
+      include: {
+        tags: { select: { name: true } }, // Fetch tags with IDs
+        author: { select: { username: true } },
       },
-    },
-  };
+    });
+
+    if (!blog) {
+      return { notFound: true };
+    }
+
+    return {
+      props: {
+        blog: {
+          ...blog,
+          createdAt: blog.createdAt.toISOString(), // Ensure date is serialized
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    return { notFound: true };
+  }
 };
 
 export default BlogPostPage;

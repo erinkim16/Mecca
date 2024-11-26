@@ -6,7 +6,7 @@ interface CommentListProps {
   onReply: (text: string, parentId: number) => void;
   onRate: (id: number, rating: number) => void;
   onReport: (id: number, reason: string) => void;
-  // onHide: (id: number) => void;
+  onRemoveVote: (id: number) => void;
 }
 
 interface Comment {
@@ -25,6 +25,7 @@ const CommentList: React.FC<CommentListProps> = ({
   onReply,
   onRate,
   onReport,
+  onRemoveVote
 }) => {
   if (!Array.isArray(comments) || comments.length === 0) {
     return <p>No comments available. Be the first to comment!</p>;
@@ -43,6 +44,7 @@ const CommentList: React.FC<CommentListProps> = ({
             onReply={onReply}
             onRate={onRate}
             onReport={onReport}
+            onRemoveVote={onRemoveVote}
           />
 
           {/* Render replies recursively if they exist */}
@@ -53,6 +55,7 @@ const CommentList: React.FC<CommentListProps> = ({
                 onReply={onReply}
                 onRate={onRate}
                 onReport={onReport}
+                onRemoveVote={onRemoveVote}
               />
             </div>
           )}

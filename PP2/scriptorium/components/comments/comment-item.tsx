@@ -8,6 +8,7 @@ interface Comment {
     id: number;
     username: string;
   };
+  userVote?: number; // Represents the user's vote on this comment: 1 for upvote, -1 for downvote
   replies?: Comment[];
 }
 
@@ -15,17 +16,12 @@ interface CommentItemProps {
   comment: Comment;
   onReply: (text: string, parentId: number) => void;
   onRate: (id: number, rating: number) => void;
+  onRemoveVote: (id: number) => void;
   onReport: (id: number, reason: string) => void;
-
-  // onHide: (id: number) => void;
 }
 
-const getAccessToken = (): string | null => {
-  return localStorage.getItem("accessToken");
-};
-
 const validateToken = (): string | null => {
-  const token = getAccessToken();
+  const token = localStorage.getItem("accessToken");
   if (!token) {
     alert("Please log in to perform this action.");
     return null;
@@ -37,6 +33,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   comment,
   onReply,
   onRate,
+  onRemoveVote,
   onReport,
 }) => {
   const [isReplying, setIsReplying] = useState(false);
@@ -45,29 +42,22 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [isReporting, setIsReporting] = useState(false);
   const [reportText, setReportText] = useState("");
 
-  const handleUpvote = async () => {
+  const handleVote = async (vote: number) => {
     const token = validateToken();
     if (!token) return;
 
-    setIsActionLoading(true);
-    try {
-      await onRate(comment.id, 1); // +1 for upvote
-    } catch (error) {
-      console.error("Error upvoting comment ID:", comment.id, error);
-    } finally {
-      setIsActionLoading(false);
-    }
-  };
-
-  const handleDownvote = async () => {
-    const token = validateToken();
-    if (!token) return;
+    if (isActionLoading) return; // Prevent concurrent actions
 
     setIsActionLoading(true);
     try {
-      await onRate(comment.id, -1); // -1 for downvote
+      if (comment.userVote === vote) {
+        await onRemoveVote(comment.id); // Remove the vote if it's the same as the current vote
+      } else {
+        await onRate(comment.id, vote); // Otherwise, cast the vote
+      }
     } catch (error) {
-      console.error("Error downvoting comment ID:", comment.id, error);
+      console.error(`Error handling vote for comment ID: ${comment.id}`, error);
+      alert("Failed to process your vote. Please try again.");
     } finally {
       setIsActionLoading(false);
     }
@@ -78,12 +68,20 @@ const CommentItem: React.FC<CommentItemProps> = ({
     const token = validateToken();
     if (!token) return;
 
+    if (!reportText.trim()) {
+      alert("Please provide a reason for your report.");
+      return;
+    }
+
+    setIsActionLoading(true);
     try {
       await onReport(comment.id, reportText);
+      alert("Thank you for your report. We will review it shortly.");
       setReportText("");
       setIsReporting(false);
     } catch (error) {
-      console.error("Error submitting report for:", comment.id);
+      console.error(`Error reporting comment ID: ${comment.id}`, error);
+      alert("Failed to submit the report. Please try again.");
     } finally {
       setIsActionLoading(false);
     }
@@ -104,9 +102,11 @@ const CommentItem: React.FC<CommentItemProps> = ({
       await onReply(replyText.trim(), comment.id);
       setReplyText("");
       setIsReplying(false);
-      setIsActionLoading(false);
     } catch (error) {
-      console.error("Error replying to comment ID:", comment.id, error);
+      console.error(`Error replying to comment ID: ${comment.id}`, error);
+      alert("Failed to post reply. Please try again.");
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -122,10 +122,18 @@ const CommentItem: React.FC<CommentItemProps> = ({
         </div>
       </div>
       <div className="comment-actions">
-        <button onClick={handleUpvote} disabled={isActionLoading}>
+        <button
+          onClick={() => handleVote(1)}
+          disabled={isActionLoading}
+          className={comment.userVote === 1 ? "active" : ""}
+        >
           👍 Upvote
         </button>
-        <button onClick={handleDownvote} disabled={isActionLoading}>
+        <button
+          onClick={() => handleVote(-1)}
+          disabled={isActionLoading}
+          className={comment.userVote === -1 ? "active" : ""}
+        >
           👎 Downvote
         </button>
         <button
