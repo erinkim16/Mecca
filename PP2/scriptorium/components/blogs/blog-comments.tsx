@@ -6,9 +6,13 @@ interface Comment {
   id: number;
   content: string;
   rating: number;
-  author: { username: string };
+  author: {
+    id: number;
+    username: string;
+  };
   replies?: Comment[];
 }
+
 
 const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -42,27 +46,38 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
         },
         body: JSON.stringify({ content: text, blogId, parentId }),
       });
-
-      if (!response.ok) throw new Error("Failed to post comment.");
+  
+      if (!response.ok) {
+        throw new Error("Failed to post comment.");
+      }
+  
       const newComment = await response.json();
-      setComments((prev) =>
-        parentId
-          ? prev.map((comment) =>
-              comment.id === parentId
-                ? { ...comment, replies: [newComment, ...(comment.replies || [])] }
-                : comment
-            )
-          : [newComment, ...prev]
-      );
+        
+      if (parentId) {
+        // Fetch the updated parent comment with its replies
+        const updatedParentResponse = await fetch(`/api/comments/${parentId}`);
+        const updatedParent = await updatedParentResponse.json();
+  
+        setComments((prevComments) =>
+          prevComments.map((comment) =>
+            comment.id === parentId ? updatedParent : comment
+          )
+        );
+      } else {
+        // Add the new top-level comment
+        setComments((prevComments) => [newComment, ...prevComments]);
+      }
+
+      await fetchComments();
     } catch (error) {
       console.error("Error posting comment:", error);
     }
   };
-
+  
     const handleReport = async (id: number, report: string) => {
       try {
         const token = localStorage.getItem("accessToken");
-        const response = await fetch('/api/comments/${id}/rate', {
+        const response = await fetch(`/api/comments/${id}/report`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

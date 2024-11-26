@@ -5,16 +5,19 @@ interface Comment {
   content: string;
   rating: number;
   author: {
+    id: number;
     username: string;
   };
   replies?: Comment[];
 }
+
 
 interface CommentItemProps {
   comment: Comment;
   onReply: (text: string, parentId: number) => void;
   onRate: (id: number, rating: number) => void;
   onReport: (id: number, reason: string) => void;
+
  // onHide: (id: number) => void;
 }
 
@@ -98,11 +101,10 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate, onR
       await onReply(replyText.trim(), comment.id);
       setReplyText("");
       setIsReplying(false);
+      setIsActionLoading(false);
     } catch (error) {
       console.error("Error replying to comment ID:", comment.id, error);
-    } finally {
-      setIsActionLoading(false);
-    }
+    } 
   };
 
   return (
@@ -134,13 +136,13 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate, onR
         <form onSubmit={handleReport} className="report-form">
           <textarea
           value={reportText}
-          
+
           onChange={(e) => setReportText(e.target.value)}
           placeholder="Write the reason for your report..."
           required
           disabled={isActionLoading}
           />
-          <button type="submit" disabled={isActionLoading || !replyText.trim()}>
+          <button type="submit" disabled={isActionLoading || !reportText.trim()}>
             Submit Report
           </button>
         </form>

@@ -14,9 +14,10 @@ interface Comment {
   content: string;
   rating: number;
   author: {
+    id: number;
     username: string;
   };
-  replies?: Comment[]; // Allow undefined for replies
+  replies?: Comment[];
 }
 
 const CommentList: React.FC<CommentListProps> = ({

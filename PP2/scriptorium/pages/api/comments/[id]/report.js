@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
 
-    if (req.method !== "PUT"){
+    if (req.method !== "POST"){
         return res.status(405).json({ error: "Method not allowed"});
     }
 
@@ -16,21 +16,21 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: "Unauthorized user" });
     }
 
-    const { commentId } = req.query;
+    const { id } = req.query;
     const { reason } = req.body;
 
     if (!id || isNaN(parseInt(id))) {
         return res.status(400).json({ error: "Invalid or missing comment ID" });
       }
-    
+
     let report;
 
     try {
         report = await prisma.commentReport.create({
             data: {
-                report,
+                reason: JSON.stringify({ reason }),
                 comment: {
-                    connect: { id: commentId},
+                    connect: { id: parseInt(id) },
                 },
                 reporter: {
                     connect: { id: user.id },
