@@ -7,7 +7,7 @@ interface ExecSettingsProps {
   language: string;
   setLanguage: React.Dispatch<React.SetStateAction<string>>;
   code: string; // The code content passed as a prop
-  setCode: React.Dispatch<React.SetStateAction<string>>
+  setCode: React.Dispatch<React.SetStateAction<string>>;
   templateInfo: {
     explanation: string;
     title: string;
@@ -34,12 +34,11 @@ export default function ExecSettings(props: ExecSettingsProps) {
     console.log(props.templateInfo);
     setTitle(props.templateInfo.title);
     setDescription(props.templateInfo.explanation);
-     // @ts-ignore comment  // @ts-ignore comment 
-     var extractedTags = props.templateInfo.tags.map(tag => tag.name);
-     // Now extractedTags will be an array of strings, e.g., ["demo"]
-     setTags(extractedTags);
+    // @ts-ignore comment  // @ts-ignore comment
+    var extractedTags = props.templateInfo.tags.map((tag) => tag.name);
+    // Now extractedTags will be an array of strings, e.g., ["demo"]
+    setTags(extractedTags);
   }, [props.templateInfo]); // Dependency array ensures this runs when templateInfo changes
-  
 
   const executeAndUpdateOut = async () => {
     // Clear what's currently outputted
@@ -74,7 +73,7 @@ export default function ExecSettings(props: ExecSettingsProps) {
       return;
     }
 
-    if (props.templateInfo.id){
+    if (props.templateInfo.id) {
       const response = await axios.put(
         `/api/templates/${props.templateInfo.id}`,
         {
@@ -90,15 +89,13 @@ export default function ExecSettings(props: ExecSettingsProps) {
           },
         }
       );
-  
+
       if (response.status === 200) {
         alert("Code edited successfully!");
       } else {
         alert("Failed to edit code.");
       }
-    }
-
-    else{
+    } else {
       const response = await axios.post(
         `/api/templates`,
         {
@@ -114,14 +111,13 @@ export default function ExecSettings(props: ExecSettingsProps) {
           },
         }
       );
-  
+
       if (response.status === 200) {
         alert("Code saved successfully!");
       } else {
         alert("Failed to save code.");
       }
     }
-    
   };
 
   const forkCode = async () => {

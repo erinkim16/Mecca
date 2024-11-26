@@ -13,7 +13,6 @@ interface Comment {
   replies?: Comment[];
 }
 
-
 const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -46,18 +45,18 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
         },
         body: JSON.stringify({ content: text, blogId, parentId }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to post comment.");
       }
-  
+
       const newComment = await response.json();
-        
+
       if (parentId) {
         // Fetch the updated parent comment with its replies
         const updatedParentResponse = await fetch(`/api/comments/${parentId}`);
         const updatedParent = await updatedParentResponse.json();
-  
+
         setComments((prevComments) =>
           prevComments.map((comment) =>
             comment.id === parentId ? updatedParent : comment
@@ -73,31 +72,31 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       console.error("Error posting comment:", error);
     }
   };
-  
-    const handleReport = async (id: number, report: string) => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        const response = await fetch(`/api/comments/${id}/report`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ report }),
-        });
 
-        if (!response.ok) {
-          const errorData = await response.json(); // Parse the error message
-          throw new Error(errorData.message || "Failed to report comment.");
-        }
-    
-        alert("Comment reported successfully. Thank you!");
-      } catch (error) {
-        alert("Failed to report the comment. Please try again later");
+  const handleReport = async (id: number, report: string) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(`/api/comments/${id}/report`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ report }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json(); // Parse the error message
+        throw new Error(errorData.message || "Failed to report comment.");
       }
-    };
 
-    const onRate = async (id: number, rating: number) => {
+      alert("Comment reported successfully. Thank you!");
+    } catch (error) {
+      alert("Failed to report the comment. Please try again later");
+    }
+  };
+
+  const onRate = async (id: number, rating: number) => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       alert("You must be logged in to rate comments.");
@@ -128,7 +127,7 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       return;
     }
   };
-  
+
   useEffect(() => {
     fetchComments();
   }, [blogId]);

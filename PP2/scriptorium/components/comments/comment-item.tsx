@@ -11,14 +11,13 @@ interface Comment {
   replies?: Comment[];
 }
 
-
 interface CommentItemProps {
   comment: Comment;
   onReply: (text: string, parentId: number) => void;
   onRate: (id: number, rating: number) => void;
   onReport: (id: number, reason: string) => void;
 
- // onHide: (id: number) => void;
+  // onHide: (id: number) => void;
 }
 
 const getAccessToken = (): string | null => {
@@ -34,7 +33,12 @@ const validateToken = (): string | null => {
   return token;
 };
 
-const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate, onReport }) => {
+const CommentItem: React.FC<CommentItemProps> = ({
+  comment,
+  onReply,
+  onRate,
+  onReport,
+}) => {
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -69,18 +73,17 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate, onR
     }
   };
 
-  
   const handleReport = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = validateToken();
     if (!token) return;
-    
-    try{
+
+    try {
       await onReport(comment.id, reportText);
       setReportText("");
       setIsReporting(false);
     } catch (error) {
-      console.error("Error submitting report for:", comment.id)
+      console.error("Error submitting report for:", comment.id);
     } finally {
       setIsActionLoading(false);
     }
@@ -104,7 +107,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate, onR
       setIsActionLoading(false);
     } catch (error) {
       console.error("Error replying to comment ID:", comment.id, error);
-    } 
+    }
   };
 
   return (
@@ -125,30 +128,36 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate, onR
         <button onClick={handleDownvote} disabled={isActionLoading}>
           👎 Downvote
         </button>
-        <button onClick={() => setIsReplying(!isReplying)} disabled={isActionLoading}>
+        <button
+          onClick={() => setIsReplying(!isReplying)}
+          disabled={isActionLoading}
+        >
           Reply
         </button>
-        <button onClick={() => setIsReporting(!isReporting)} disabled={isActionLoading}>
+        <button
+          onClick={() => setIsReporting(!isReporting)}
+          disabled={isActionLoading}
+        >
           Report
         </button>
       </div>
       {isReporting && (
         <form onSubmit={handleReport} className="report-form">
           <textarea
-          value={reportText}
-
-          onChange={(e) => setReportText(e.target.value)}
-          placeholder="Write the reason for your report..."
-          required
-          disabled={isActionLoading}
+            value={reportText}
+            onChange={(e) => setReportText(e.target.value)}
+            placeholder="Write the reason for your report..."
+            required
+            disabled={isActionLoading}
           />
-          <button type="submit" disabled={isActionLoading || !reportText.trim()}>
+          <button
+            type="submit"
+            disabled={isActionLoading || !reportText.trim()}
+          >
             Submit Report
           </button>
         </form>
-      )
-
-      }
+      )}
       {isReplying && (
         <form onSubmit={handleReplySubmit} className="reply-form">
           <textarea

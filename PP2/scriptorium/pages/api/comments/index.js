@@ -83,7 +83,9 @@ export default async function handler(req, res) {
       const user = verifyAccessToken(authHeader);
 
       if (!user) {
-        return res.status(401).json({ error: "Please log in to post a comment" });
+        return res
+          .status(401)
+          .json({ error: "Please log in to post a comment" });
       }
 
       const { content, blogId, parentId } = req.body;
@@ -101,7 +103,9 @@ export default async function handler(req, res) {
         },
       });
 
-      return res.status(201).json({ message: "Comment added successfully", comment });
+      return res
+        .status(201)
+        .json({ message: "Comment added successfully", comment });
     } else {
       return res.status(405).json({ error: "Method not allowed" });
     }

@@ -50,7 +50,7 @@ export default function TagInput(props: TagInputProps) {
             cursor: pointer;
             user-select: none;
           }
-        `}{" "}
+        `}
       </style>
 
       <div className="tag-input-container">
