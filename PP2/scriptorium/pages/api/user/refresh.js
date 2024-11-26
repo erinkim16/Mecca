@@ -26,6 +26,7 @@ export default function handler(req, res) {
       // verify refresh token
       const decoded = verifyRefreshToken(refreshToken);
       if (!decoded) {
+        console.log("refresh token not valid");
         return res
           .status(401)
           .json({ message: "Invalid or expired refresh token" });
@@ -37,6 +38,7 @@ export default function handler(req, res) {
         username: decoded.username,
         role: decoded.role,
       });
+      console.log("new access token generated");
 
       return res.status(200).json({ accessToken: newAccessToken });
     } catch (error) {

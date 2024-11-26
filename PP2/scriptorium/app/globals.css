@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 :root {
   --background: #f7fcff;
   --foreground: #171717;
@@ -12,24 +11,22 @@
   --secondary-dark: #914859;
   --accent: #82b4a3;
   --accent-dark: #4d8673;
-  --ui: #95b8d1 ;
+  --ui: #95b8d1;
   --ui-dark: #5d89a8;
 }
 
-
 .dark {
-  --background: #1a1a1a;  /* Dark mode background */
-  --foreground: #f7f7f7;  /* Light text on dark background */
+  --background: #1a1a1a; /* Dark mode background */
+  --foreground: #f7f7f7; /* Light text on dark background */
   --primary: #809bce;
   --primary-dark: #5876b8;
   --secondary: #c58fa8;
   --secondary-dark: #914859;
   --accent: #82b4a3;
   --accent-dark: #4d8673;
-  --ui: #95b8d1 ;
+  --ui: #95b8d1;
   --ui-dark: #5d89a8;
 }
-
 
 /* @media (prefers-color-scheme: dark) {
   :root {
@@ -38,15 +35,18 @@
   }
 } */
 
-
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
-  
 }
 
-button, select, input, textarea, label, p {
+button,
+select,
+input,
+textarea,
+label,
+p {
   @apply m-2;
 }
 
@@ -76,13 +76,16 @@ select {
   background-size: 1.2rem;
 }
 
-input, .exec-output, textarea {
+input,
+.exec-output,
+textarea {
   @apply w-full p-4 border border-gray-200 rounded-md bg-white text-gray-700 shadow-md;
   box-sizing: border-box;
 }
 
 /* Stuff for execution */
-.exec-output, .exec-error {
+.exec-output,
+.exec-error {
   @apply max-h-80 overflow-y-auto overflow-x-hidden whitespace-normal break-words;
   @apply text-base w-full p-4 border border-gray-200 rounded-md bg-white text-gray-700 shadow-md;
   font-family: monospace;
@@ -90,17 +93,15 @@ input, .exec-output, textarea {
   white-space: pre-wrap;
 }
 
-.exec-error { 
+.exec-error {
   @apply border-secondaryDark text-white;
   @apply bg-secondary;
   @apply text-sm;
   @apply text-balance;
 }
 
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
 }
-

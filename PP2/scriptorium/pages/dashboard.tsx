@@ -17,7 +17,7 @@ const DashboardPage = () => {
       } catch (error) {
         console.error("Authentication failed:", error);
         setIsLoading(false); // Ensure loading stops on error
-        router.push("/login"); // Redirect to login page
+        router.push("/login-page"); // Redirect to login page
       }
     };
 
