@@ -1,0 +1,141 @@
+// PYTHON DUAL
+def main():
+    name = input()
+    age = int(input())
+    print(f"Hello, {name}! You are {age} years old.")
+
+if __name__ == "__main__":
+    main()
+
+// JAVA DUAL
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String name = scanner.nextLine();
+        int age = Integer.parseInt(scanner.nextLine());
+        System.out.println("Hello, " + name + "! You are " + age + " years old.");
+    }
+}
+
+// PYTHON ISOLATION
+import os
+import socket
+try:
+    print("Testing Internet Access... \n")
+    socket.create_connection(("www.google.com", 80), timeout=1)
+    internet_access = True
+except socket.error:
+    internet_access = False
+
+print("Internet Access: ", internet_access, " \n")
+
+try:
+    with open("C:/Windows/System32/drivers", "r") as f:
+        print(f.read())
+except Exception as e:
+    print(f"Access denied: {e} ")
+
+// JS DUAL
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false
+});
+
+const inputs = [];
+
+// Collect multiple lines from stdin
+rl.on('line', (line) => {
+  inputs.push(line);
+});
+
+rl.on('close', () => {
+  if (inputs.length >= 2) {
+    // Assuming you want the first and second input lines
+    const firstInput = inputs[0];
+    const secondInput = inputs[1];
+    console.log(`Input 1: ${firstInput} and Input 2: ${secondInput} from JavaScript!`);
+  } else {
+    console.log('Insufficient input provided.');
+  }
+});
+
+// GOLANG DUAL 
+// Golang program to show how 
+// to take input from the user 
+package main 
+  
+import "fmt"
+  
+// main function 
+func main() { 
+  
+    // Println function is used to 
+    // display output in the next line 
+    fmt.Println("Enter Your First Name: ") 
+  
+    // var then variable name then variable type 
+    var first string 
+  
+    // Taking input from user 
+    fmt.Scanln(&first) 
+    fmt.Println("Enter Second Last Name: ") 
+    var second string 
+    fmt.Scanln(&second) 
+  
+    // Print function is used to 
+    // display output in the same line 
+    fmt.Print("Your Full Name is: ") 
+  
+    // Addition of two string 
+    fmt.Print(first + " " + second) 
+} 
+
+// ELIXIR DUAL
+input1 = IO.gets("Input 1: ") |> String.trim()
+
+input2 = IO.gets("Input 2: ") |> String.trim()
+
+IO.puts "You entered: #{input1} and #{input2}"
+
+// PERL DUAL
+print "Enter the first input: ";
+my $input1 = <STDIN>;
+chomp($input1);
+
+print "Enter the second input: ";
+my $input2 = <STDIN>;
+chomp($input2);
+
+print "You entered: $input1 and $input2\n";
+
+
+// PHP DUAL
+<?php
+// Prompt and read first input
+echo "Enter the first input: ";
+$input1 = trim(fgets(STDIN));
+
+// Prompt and read second input
+echo "Enter the second input: ";
+$input2 = trim(fgets(STDIN));
+
+// Print the inputs
+echo "You entered: $input1 and $input2\n";
+?>
+
+// RUBY DUAL
+# Prompt and read the first input
+print "Enter the first input: "
+input1 = gets.chomp
+
+# Prompt and read the second input
+print "Enter the second input: "
+input2 = gets.chomp
+
+# Print the inputs
+puts "You entered: #{input1} and #{input2}"
