@@ -7,8 +7,8 @@ import Docker from 'dockerode';
 
 const docker = new Docker();
 const SUPPORTED_LANGUAGES = ["python", "java", "javascript", "golang", "elixir", "perl", "php", "ruby", "rust", "swift"];
-const TIMEOUT_TIME = 5000;
-const MAX_RESOURCES = 50; // 50 MB
+const TIMEOUT_TIME = 6000;
+const MAX_RESOURCES = 10 * 1024 * 1024; // 10MB
 
 
 /** Executes code in a specified language
@@ -271,62 +271,6 @@ function getRandomTempFile() {
     return { temp_file_dir, filename, relative_path };
 }
 
-async function executeCodeDockerOld(code, language, stdin) {
-  try {
-    // Map languages to Docker images
-    const imageMap = {
-      python: 'my-python-env',
-      java: 'my-java-env',
-      // Add more languages as needed
-    };
-    const image = imageMap[language];
-
-    if (!image) {
-      return res.status(400).json({ error: 'Language not supported.' });
-    }
-
-    const absolutePath = path.join(process.cwd(), 'PP2', 'scriptorium', 'utils', 'temp-compiled-files');
-    console.log(absolutePath);
-    var dockerPath = absolutePath.replace(/\\/g, '/');
-    console.log(dockerPath);
-
-    // Create and start a Docker container to execute the code
-    const container = await docker.createContainer({
-      Image: image,
-      Tty: false,
-      Cmd: ["python3", "your_code.py"], // Adjust command per language
-      Binds: [`${dockerPath}:/app`], // Bind current directory
-      HostConfig: {
-        AutoRemove: true,
-        Memory: 512 * 1024 * 1024, // Memory limit
-        CpuShares: 1024, // CPU limit
-      },
-    });
-
-    await container.start();
-
-    // Attach to the container's output stream
-    const stream = await container.attach({ stream: true, stdout: true, stderr: true });
-    let output = '';
-
-    // Listen for data from the container's output
-    stream.on('data', (chunk) => {
-        // Convert chunk to string and remove non-printable characters using regex
-        output += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-    });
-
-    // Wait for the container to stop
-    await container.wait();
-
-    // Log the output after the container stops
-    console.log(output);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// executeCodeDocker("temp", "python", "temp");
-
 async function executeCodeDocker(language, code, stdin) {
     const tempDir = path.join(process.cwd(), "..", "..", "temp_code");
     if (!fs.existsSync(tempDir)) {
@@ -413,64 +357,88 @@ async function executeCodeDocker(language, code, stdin) {
       const container = await docker.createContainer({
         Image: imageName,
         Cmd: command,
-        Tty: true,
+        Tty: false,
         HostConfig: {
+          ReadonlyRootfs: true,
+          NetworkMode: 'none',
+          CapDrop: ['ALL'],
           Binds: [`${tempDir}:/app`],  // Make sure this is the correct path
           AutoRemove: true,
-          Memory: 512 * 1024 * 1024, // Memory limit
-          CpuShares: 1024, // CPU limit
+          Memory: MAX_RESOURCES,
           StdinOnce: true,
         },
         WorkingDir: '/app', // Ensure the working directory inside Docker is correct
       });
     
       await container.start();
+
+  // Attach to the container's combined output stream
+  const stream = await container.attach({
+    stream: true,
+    stdout: true,
+    stderr: true,
+  });
+
+  // Buffers to store the separate outputs
+  var stdoutData = '';
+  var stderrData = '';
+
+  // Use Docker's demuxStream to separate stdout and stderr
+  container.modem.demuxStream(stream, {
+    write: (chunk) => {
+      // Handle stdout data
+      stdoutData += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    }
+  }, {
+    write: (chunk) => {
+      // Handle stderr data
+      stderrData += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    }
+  });
     
-      // Attach to the container's output stream
-      const stream = await container.attach({
-        stream: true,
-        stdout: true,
-        stderr: true,
-      });
+  const timeout = TIMEOUT_TIME;
 
-    let output = '';
-
-    // Listen for data from the container's output
-    stream.on('data', (chunk) => {
-        // Convert chunk to string and remove non-printable characters using regex
-        output += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+  const timeoutPromise = new Promise((resolve, reject) => {
+    const timer = setTimeout(async () => {
+      console.warn('Container execution timeout, stopping container...');
+      try {
+        await container.kill(); // Stop the container if it takes too long
+        stderrData = 'Code timed out after ' + TIMEOUT_TIME + 'ms';  // Set stderrData to 'timeout' instead of throwing an error
+        resolve();  // Resolve the promise to prevent further processing
+      } catch (err) {
+        reject(err);  // Resolve the promise to avoid uncaught exceptions
+      }
+    }, timeout);
+  
+    // Clear the timeout if the container finishes execution in time
+    container.wait().then(() => {
+      clearTimeout(timer);
+      resolve();  // Resolve the promise when the container finishes execution
+    }).catch(() => {
+      clearTimeout(timer);
+      resolve();  // Resolve the promise if there's an error with container.wait()
     });
-
-    // Timeout to stop the container if it takes too long (e.g., 10 seconds)
-    const timeout = TIMEOUT_TIME; 
-    const timeoutPromise = new Promise((_, reject) => {
-      const timer = setTimeout(async () => {
-        try {
-          console.warn('Container execution timeout, stopping container...');
-          await container.kill(); // Stop the container if it takes too long
-          reject(new Error('Execution timeout: Container stopped'));
-        } catch (err) {
-          reject(new Error('Error stopping container after timeout'));
-        }
-      }, timeout);
-
-      // Clear the timeout if the container finishes execution in time
-      container.wait().then(() => clearTimeout(timer)).catch(() => clearTimeout(timer));
-    });
-
-    // Wait for either container to finish or timeout to trigger
-    await Promise.race([
-      container.wait(), // Wait for the container to finish execution
-      timeoutPromise,   // Wait for the timeout
-    ]);
+  });
+  
+  // Wait for either container to finish or timeout to trigger
+  await Promise.race([
+    container.wait(), // Wait for the container to finish execution
+    timeoutPromise,   // Wait for the timeout
+  ]);
 
     // Cleanup
     cleanUp(tempDir, filePath, filename, language);
-
-    return output;
+    // Output the collected data
+    // console.log('Standard Output:', stdoutData);
+    // console.log('Standard Error:', stderrData);
+  
+    return {
+      stdout: stdoutData,
+      stderr: stderrData,
+    };
   
     } catch (err) {
-      console.error('Error executing code:', err);
+      console.log('Error executing code:', err);
       throw err;
     }
   }
@@ -521,8 +489,31 @@ async function executeCodeDocker(language, code, stdin) {
 //     fmt.Scanln(&input)
 //     fmt.Print(input)
 // }`, 'Alessia\n');
-  
 
+// executeCodeDocker("python", `import os
+// import socket
+
+// # Test if the system can connect to an external server (Internet connectivity)
+// try:
+//     print("Testing Internet Access...")
+//     socket.create_connection(("www.google.com", 80), timeout=1)
+//     internet_access = True
+// except socket.error:
+//     internet_access = False
+
+// print("Internet Access: ", internet_access)
+
+// try:
+//     with open("C:/Windows/System32/drivers", "r") as f:
+//         print(f.read())
+// except Exception as e:
+//     print(f"Access denied: {e}")
+// `, "");
+
+// executeCodeDocker("python", `print("Hello, World!")`, "");
+
+// executeCodeDocker("python", `while True:
+//     pass`, "");
 
 function cleanUp(tempDir, filePath, filename, language) {
     fs.rmSync(filePath);

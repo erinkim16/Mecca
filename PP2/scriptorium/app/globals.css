@@ -8,8 +8,8 @@
   --foreground: #171717;
   --primary: #809bce;
   --primary-dark: #5876b8;
-  --secondary: #eac4d5;
-  --secondary-dark: #c27b8c;
+  --secondary: #c58fa8;
+  --secondary-dark: #914859;
   --accent: #82b4a3;
   --accent-dark: #4d8673;
   --ui: #95b8d1 ;
@@ -43,6 +43,10 @@ button {
   @apply border border-primaryDark;
 }
 
+.button-pink {
+  @apply bg-secondary hover:bg-secondaryDark border-secondaryDark;
+}
+
 /* Credit: GPT helped with styling */
 /* Custom select styles */
 select {
@@ -57,7 +61,7 @@ select {
   background-size: 1.2rem;
 }
 
-input, .exec-output {
+input, .exec-output, textarea {
   @apply w-full p-4 border border-gray-200 rounded-md bg-white text-gray-700 shadow-md;
   box-sizing: border-box;
 }
@@ -72,7 +76,7 @@ input, .exec-output {
 }
 
 .exec-error { 
-  @apply border-secondaryDark;
+  @apply border-secondaryDark text-white;
   @apply bg-secondary;
   @apply text-sm;
   @apply text-balance;

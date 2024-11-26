@@ -265,10 +265,10 @@ export default async function handler(req, res) {
         const authHeader = req.headers.authorization;
         const user = verifyAccessToken(authHeader);
 
-        let visitor = false;
-        if (!user) {
-          visitor = true;
-        }
+        let visitor = true;
+        // if (!user) {
+        //   visitor = true;
+        // }
 
         // Split the query parameters into terms and convert them to lowercase
         const titleTerms = title ? title.toLowerCase().split(" ") : [];

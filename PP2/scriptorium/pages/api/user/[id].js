@@ -124,6 +124,7 @@ export default async function handler(req, res) {
           lastName: true,
           email: true,
           avatar: true,
+          role: true,
         },
       });
 

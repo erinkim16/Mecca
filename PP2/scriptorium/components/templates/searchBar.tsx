@@ -1,51 +1,37 @@
+// /components/SearchBar.tsx
 import React, { useState } from "react";
 
-interface SearchBarProps {
-  onSearch: (filters: {
-    title?: string;
-    explanation?: string;
-    tags?: string;
-  }) => void;
-}
+type SearchBarProps = {
+  onSearch: (searchField: string, query: string) => void;
+};
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [title, setTitle] = useState("");
-  const [explanation, setExplanation] = useState("");
-  const [tags, setTags] = useState("");
+  const [searchField, setSearchField] = useState("title"); // Default: search by title
+  const [query, setQuery] = useState("");
 
   const handleSearch = () => {
-    onSearch({ title, explanation, tags });
+    if (!query.trim()) return; // Avoid empty searches
+    onSearch(searchField, query.trim());
   };
 
   return (
     <div className="search-bar">
-      <div className="search-field">
-        <label>Title:</label>
-        <input
-          type="text"
-          placeholder="Search by title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </div>
-      <div className="search-field">
-        <label>Explanation:</label>
-        <input
-          type="text"
-          placeholder="Search by explanation"
-          value={explanation}
-          onChange={(e) => setExplanation(e.target.value)}
-        />
-      </div>
-      <div className="search-field">
-        <label>Tags:</label>
-        <input
-          type="text"
-          placeholder="Search by tags (comma-separated)"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-        />
-      </div>
+      <select
+        value={searchField}
+        onChange={(e) => setSearchField(e.target.value)}
+        className="dropdown"
+      >
+        <option value="title">Title</option>
+        <option value="explanation">Explanation</option>
+        <option value="tag">Tag</option>
+      </select>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={`Search by ${searchField}`}
+        className="input"
+      />
       <button onClick={handleSearch} className="search-button">
         Search
       </button>

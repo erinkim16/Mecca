@@ -17,8 +17,9 @@ const LogoutButton: React.FC = () => {
 
   return (
     <button
+      className="button-pink"
       onClick={handleLogout}
-      style={{ marginTop: "20px", background: "red", color: "white" }}
+      style={{ marginTop: "20px"}}
     >
       Logout
     </button>

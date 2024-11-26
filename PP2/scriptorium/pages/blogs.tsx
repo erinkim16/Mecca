@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link"; 
+import NavBar from "@/components/general/nav-bar";
 import BlogSearch from "./blogs/blog-search";
 
 interface BlogPost {
@@ -50,6 +51,7 @@ const BlogList: React.FC = () => {
 
   return (
     <div className="blog-list">
+      <NavBar />
       <h1>Search Blog Posts</h1>
       <BlogSearch onSearch={handleSearch} />
       {loading && <p>Loading...</p>}

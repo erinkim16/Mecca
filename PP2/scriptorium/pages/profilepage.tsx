@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import ProfileCard from "@/components/profile/profilecard";
+import NavBar from "@/components/general/nav-bar";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState<{
@@ -49,6 +50,7 @@ const ProfilePage = () => {
 
   return (
     <div>
+      <NavBar />
       <h1>Profile</h1>
       {userData ? (
         <ProfileCard user={userData} />

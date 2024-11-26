@@ -26,7 +26,8 @@ export default async function handler(req, res) {
 
     try {
         const output = await utils.executeCodeDocker(language, code, stdin);
-        return res.status(200).json({ output });
+        console.log(output);
+        return res.status(200).json({ output: output.stdout, error: output.stderr });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: error });
