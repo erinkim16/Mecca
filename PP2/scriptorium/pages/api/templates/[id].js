@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { verifyAccessToken } from "../../../utils/account/auth";
-import fs from "fs";
+// import fs from "fs";
+import * as fs from 'fs';
 import path from "path";
 import { saveCodeFile } from "../../../utils/code-saving/codeFileHandler";
 /**
@@ -47,19 +48,19 @@ export default async function handler(req, res) {
         let codeContent = "";
         if (template.code?.filePath) {
           const codeDir = path.join(process.cwd(), template.code.filePath);
+          console.log(codeDir);
           try {
-            codeContent = fs.readFile(codeDir, "utf-8", (err, data) => {
-              if (err) {
-                console.error("Error reading code file:", err.message);
-                return "";
-              }
-              return data;
-            });
+            codeContent = await fs.promises.readFile(codeDir, "utf-8");
+
+            console.log("code content");
+            console.log(codeContent);
           } catch (readError) {
             console.error("Error reading code file:", readError.message);
             codeContent = ""; // Fallback
           }
         }
+
+        
 
         // Respond with the template data
         res.status(200).json({

@@ -7,7 +7,7 @@ import Docker from 'dockerode';
 
 const docker = new Docker();
 const SUPPORTED_LANGUAGES = ["python", "java", "javascript", "golang", "elixir", "perl", "php", "ruby", "rust", "swift"];
-const TIMEOUT_TIME = 6000;
+const TIMEOUT_TIME = 20000;
 const MAX_RESOURCES = 500 * 1024 * 1024; // 10MB
 
 
@@ -20,6 +20,7 @@ const MAX_RESOURCES = 500 * 1024 * 1024; // 10MB
  */
 async function executeCode(code, language, stdin) {
     var process;
+    
 
     switch (language) {
         case "python":
@@ -276,6 +277,8 @@ async function executeCodeDocker(language, code, stdin) {
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
     }
+
+    console.log(language);
   
     const { temp_file_dir, filename, relative_path } = getRandomTempFile();
     let file = filename;
@@ -310,7 +313,7 @@ async function executeCodeDocker(language, code, stdin) {
         imageName = 'my-golang-env'; 
         fileExt = 'go';
         fileName = file + '.' + fileExt;
-        command = ['sh', '-c', `echo "${stdin}" | go run ${fileName}`];
+        command = ['sh', '-c', `echo -e "${stdin}" | go run ${fileName}`];
         break;
       case 'elixir':
         imageName = 'my-elixir-env'; 
@@ -349,6 +352,7 @@ async function executeCodeDocker(language, code, stdin) {
         command = ['sh', '-c', `echo "${stdin}" | swift ${fileName}`];
         break;
       default:
+        console.log("unsupported lang");
         throw new Error(`Unsupported language: ${language}`);
     }
   

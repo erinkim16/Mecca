@@ -11,22 +11,31 @@ export default function Execution() {
     const [language, setLanguage] = useState("python");
     const [codeWidth, setCodeWidth] = useState("60vw");
     const [fontSize, setFontSize] = useState(16);
-    const [templateInfo, setTemplateInfo] = useState({description: "", title: "", tags: [], id: 0});
+    const [templateInfo, setTemplateInfo] = useState({explanation: "", title: "", tags: [], id: 0});
 
     const router = useRouter();
+
     const { id } = router.query;
 
-    if (id) {
-        axios.get(`/api/templates/${id}`)
-            .then(response => {
-                setCode(response.data.code.content);
-                setLanguage(response.data.code.language);
-                setTemplateInfo(response.data);
-            })
-            .catch(error => {
-                console.error(error);
-            });
-    }
+    useEffect(() => {
+      if (id) {
+          axios.get(`/api/templates/${id}`, {
+              headers: {
+                  'Cache-Control': 'no-cache',
+              },
+          })
+          .then(response => {
+              setCode(response.data.code.content);
+              setLanguage(response.data.code.language);
+              // @ts-ignore
+              setTemplateInfo({title: response.data.title, explanation: response.data.explanation, tags: response.data.tags, id: parseInt(id)});
+              console.log(response);
+          })
+          .catch(error => {
+              console.error(error);
+          });
+      }
+  }, [id]); // Dependency array ensures this runs only when 'id' changes
 
     useEffect(() => {
         const handleResize = () => {

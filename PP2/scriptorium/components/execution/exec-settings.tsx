@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LanguageDropdown from "./language-dropdown";
 import TagInput from "../general/tag-input";
 import axios from "axios";
@@ -7,9 +7,9 @@ interface ExecSettingsProps {
   language: string;
   setLanguage: React.Dispatch<React.SetStateAction<string>>;
   code: string; // The code content passed as a prop
-  setCode: React.Dispatch<React.SetStateAction<string>>;
+  setCode: React.Dispatch<React.SetStateAction<string>>
   templateInfo: {
-    description: string;
+    explanation: string;
     title: string;
     tags: string[];
     id: number;
@@ -21,13 +21,25 @@ export default function ExecSettings(props: ExecSettingsProps) {
   const [error, setError] = useState("");
   const [stdin, setStdin] = useState("");
   // Define the state for tags and input value
-  const [tags, setTags] = useState<string[]>(props.templateInfo.tags);
+  const [tags, setTags] = useState<string[]>([""]);
   const [input, setInput] = useState<string>("");
-  const [title, setTitle] = useState<string>(props.templateInfo.title);
-  const [description, setDescription] = useState<string>(props.templateInfo.description);
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
 
   // Hide and Show Certain Elements
   // TODO
+
+  // Sync state with props when templateInfo changes
+  useEffect(() => {
+    console.log(props.templateInfo);
+    setTitle(props.templateInfo.title);
+    setDescription(props.templateInfo.explanation);
+     // @ts-ignore comment  // @ts-ignore comment 
+     var extractedTags = props.templateInfo.tags.map(tag => tag.name);
+     // Now extractedTags will be an array of strings, e.g., ["demo"]
+     setTags(extractedTags);
+  }, [props.templateInfo]); // Dependency array ensures this runs when templateInfo changes
+  
 
   const executeAndUpdateOut = async () => {
     // Clear what's currently outputted
@@ -62,27 +74,54 @@ export default function ExecSettings(props: ExecSettingsProps) {
       return;
     }
 
-    const response = await axios.post(
-      `/api/templates`,
-      {
-        codeContent: code,
-        language: language,
-        title: title,
-        explanation: description,
-        tags: tags,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    if (props.templateInfo.id){
+      const response = await axios.put(
+        `/api/templates/${props.templateInfo.id}`,
+        {
+          codeContent: code,
+          language: language,
+          title: title,
+          explanation: description,
+          tags: tags,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Code edited successfully!");
+      } else {
+        alert("Failed to edit code.");
       }
-    );
-
-    if (response.status === 200) {
-      alert("Code saved successfully!");
-    } else {
-      alert("Failed to save code.");
     }
+
+    else{
+      const response = await axios.post(
+        `/api/templates`,
+        {
+          codeContent: code,
+          language: language,
+          title: title,
+          explanation: description,
+          tags: tags,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Code saved successfully!");
+      } else {
+        alert("Failed to save code.");
+      }
+    }
+    
   };
 
   const forkCode = async () => {
@@ -128,12 +167,14 @@ export default function ExecSettings(props: ExecSettingsProps) {
         <label> Title </label>
         <input
           placeholder="Type your title here..."
+          value={title}
           onChange={(e) => setTitle(e.target.value)}
         ></input>
 
         <label> Description </label>
         <input
           placeholder="Type your description here..."
+          value={description}
           onChange={(e) => setDescription(e.target.value)}
         ></input>
 
