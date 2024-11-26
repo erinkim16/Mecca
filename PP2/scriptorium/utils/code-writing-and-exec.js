@@ -295,7 +295,7 @@ async function executeCodeDocker(language, code, stdin) {
         command = [
           'sh',
           '-c',
-          `javac ${fileName} && echo "${stdin}" | java ${file}`
+          `javac ${fileName} && echo "${stdin}" | java -cp . ${file}`
         ];
         // Find and replace main class (has to be the same as filename)
         code = code.replace(/public class Main/, "public class " + filename);
@@ -364,7 +364,6 @@ async function executeCodeDocker(language, code, stdin) {
         Tty: false,
         HostConfig: {
           NetworkMode: 'none',
-          CapDrop: ['ALL'],
           Binds: [`${tempDir}:/app`],  // Make sure this is the correct path
           AutoRemove: true,
           Memory: MAX_RESOURCES,
@@ -404,9 +403,10 @@ async function executeCodeDocker(language, code, stdin) {
   const timeoutPromise = new Promise((resolve, reject) => {
     const timer = setTimeout(async () => {
       console.warn('Container execution timeout, stopping container...');
+      stderrData = 'Code timed out after ' + TIMEOUT_TIME + 'ms';  // Set stderrData to 'timeout' instead of throwing an error
       try {
         await container.kill(); // Stop the container if it takes too long
-        stderrData = 'Code timed out after ' + TIMEOUT_TIME + 'ms';  // Set stderrData to 'timeout' instead of throwing an error
+
         resolve();  // Resolve the promise to prevent further processing
       } catch (err) {
         reject(err);  // Resolve the promise to avoid uncaught exceptions
