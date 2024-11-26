@@ -12,6 +12,7 @@ interface ExecSettingsProps {
     description: string;
     title: string;
     tags: string[];
+    id: number;
   };
 }
 
@@ -116,6 +117,8 @@ export default function ExecSettings(props: ExecSettingsProps) {
     //   } else {
     //     alert("Failed to save code.");
     //   }
+
+    const id = props.templateInfo.id;
   };
 
   return (

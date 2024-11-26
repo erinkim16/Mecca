@@ -11,7 +11,7 @@ export default function Execution() {
     const [language, setLanguage] = useState("python");
     const [codeWidth, setCodeWidth] = useState("60vw");
     const [fontSize, setFontSize] = useState(16);
-    const [templateInfo, setTemplateInfo] = useState({description: "", title: "", tags: []});
+    const [templateInfo, setTemplateInfo] = useState({description: "", title: "", tags: [], id: 0});
 
     const router = useRouter();
     const { id } = router.query;
