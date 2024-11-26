@@ -39,13 +39,13 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ user }) => {
           border-radius: 8px;
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
           background-color: #fff;
-          text-align: center; // 중앙 정렬
+          text-align: center;
         }
         .avatar {
-          width: 100px; // 아바타 크기 조정
+          width: 100px;
           height: 100px;
-          border-radius: 50%; // 둥근 이미지
-          margin-bottom: 15px; // 이미지 아래 여백
+          border-radius: 50%;
+          margin-bottom: 15px;
         }
         p {
           margin: 10px 0;
