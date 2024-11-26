@@ -1,6 +1,7 @@
 import { useState } from "react";
 import LanguageDropdown from "./language-dropdown";
 import TagInput from "../general/tag-input";
+import axios from "axios";
 
 interface ExecSettingsProps {
   language: string;
@@ -45,6 +46,37 @@ export default function ExecSettings(props: ExecSettingsProps) {
     let code = props.code;
     let language = props.language;
     // tags, title and description can be accessed like this (thats literally the variable names)
+
+    // const data = await response.json();
+    const token = localStorage.getItem("accessToken"); // Or use cookies
+    console.log(token);
+
+    if (!token) {
+      alert("User is not authenticated.");
+      return;
+    }
+
+    const response = await axios.post(
+        `/api/templates`,
+        {
+          codeContent: code,
+          language: language,
+          title: title,
+          explanation: description,
+          tags: tags,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
+      );
+
+    if (response.status === 200) {
+        alert("Code saved successfully!");
+      } else {
+        alert("Failed to save code.");
+      }
   };
 
   const forkCode = async () => {
@@ -100,7 +132,7 @@ export default function ExecSettings(props: ExecSettingsProps) {
 
         {/* Input and Output Fields */}
         <div className="flex flex-col w-full">
-            <label htmlFor="input">Input:</label>
+            <label htmlFor="input">Input (One Input Per Line):</label>
             <textarea
                 id="input"
                 className="w-full"
