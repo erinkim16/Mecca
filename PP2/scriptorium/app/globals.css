@@ -76,7 +76,7 @@ input, .exec-output, textarea {
 }
 
 .exec-error { 
-  @apply border-secondaryDark;
+  @apply border-secondaryDark text-white;
   @apply bg-secondary;
   @apply text-sm;
   @apply text-balance;
