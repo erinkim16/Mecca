@@ -3,6 +3,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import MenuBar from "./menu-bar"; // Ensure proper path to MenuBar
 import TagInput from "../general/tag-input"; // Import the TagInput component
+import axios from "axios";
 
 const BlogEditor = () => {
   const [title, setTitle] = useState("");
@@ -10,6 +11,8 @@ const BlogEditor = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState<string>(""); // Input for TagInput
   const [codeTemplates, setCodeTemplates] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -26,27 +29,39 @@ const BlogEditor = () => {
       return;
     }
 
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      alert("You must be logged in to create a blog post.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/blogs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      setLoading(true);
+      setMessage(null);
+
+      const response = await axios.post(
+        "/api/blogs",
+        {
           title,
           description,
           content,
           tags,
           codeTemplates,
-        }),
-      });
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      if (response.ok) {
-        alert("Blog post saved successfully!");
-      } 
+      if (response.status === 200) {
+        setMessage("Blog post saved successfully!");
+      }
     } catch (error) {
-      console.log("Error saving blog post:", error);
-      alert("An error occurred while saving the blog post.");
+      console.error("Error saving blog post:", error);
+      setMessage("An error occurred while saving the blog post.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,9 +110,16 @@ const BlogEditor = () => {
       <EditorContent editor={editor} className="editor-content" />
 
       {/* Save Button */}
-      <button onClick={saveBlogPost} className="save-button">
-        Save Blog Post
+      <button
+        onClick={saveBlogPost}
+        className="save-button"
+        disabled={loading}
+      >
+        {loading ? "Saving..." : "Save Blog Post"}
       </button>
+
+      {/* Feedback Message */}
+      {message && <p className="feedback-message">{message}</p>}
     </div>
   );
 };

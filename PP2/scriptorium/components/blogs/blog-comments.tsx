@@ -4,12 +4,14 @@ import CommentForm from "../comments/add-comment";
 
 interface Comment {
   id: number;
-  text: string;
+  content: string;
   rating: number;
   author: { username: string };
   replies?: Comment[];
 }
+
 const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,65 +32,60 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
     }
   };
 
-  // Function to handle replies
-  const onReply = async (text: string, parentId: number) => {
+  const handleSubmit = async (text: string, parentId?: number) => {
     try {
+      const token = localStorage.getItem("accessToken");
       const response = await fetch(`/api/comments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: text, blogPostId: blogId, parentId }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+        body: JSON.stringify({ content: text, blogId, parentId }),
       });
-      if (!response.ok) throw new Error("Failed to post reply.");
-      fetchComments(); // Refresh comments after a reply
-    } catch (err) {
-      console.error("Error posting reply:", err); // Log error
-      alert("Failed to post reply.");
+      fetchComments();
+      if (!response.ok) {
+        throw new Error("Failed to post comment.");
+      }
+    } catch (error) {
+      throw error; // Let the error propagate back to the CommentForm
     }
   };
-
-  // Function to handle upvotes and downvotes
+  
   const onRate = async (id: number, rating: number) => {
+    console.log(rating)
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("You must be logged in to rate comments.");
+      return;
+    }
+     JSON.stringify({ rating })
     try {
+      console.log( JSON.stringify({ rating }))
       const response = await fetch(`/api/comments/${id}/rate`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ rating }),
       });
-      if (!response.ok) throw new Error("Failed to rate comment.");
-      fetchComments(); // Refresh comments after rating
-    } catch (err) {
-      console.error("Error rating comment:", err); // Log error
-      alert("Failed to rate comment.");
-    }
-  };
 
-  // Function to edit a comment
-  const onEdit = async (id: number, text: string) => {
-    try {
-      const response = await fetch(`/api/comments/${id}/edit`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (!response.ok) throw new Error("Failed to edit comment.");
-      fetchComments(); // Refresh comments after editing
+  
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Failed to rate comment:", error.message);
+        throw new Error(error.message || "Failed to rate comment.");
+      }
+  
+      console.log(`Comment with ID ${id} rated with value ${rating}`);
+      fetchComments(); // Refresh comments to reflect the rating changes
     } catch (err) {
-      console.error("Error editing comment:", err); // Log error
-      alert("Failed to edit comment.");
+      console.error("Error rating comment:", err);
+      alert("Failed to rate comment. Please try again later.");
     }
   };
-
-  // Function to hide a comment
-  const onHide = async (id: number) => {
-    try {
-      const response = await fetch(`/api/comments/${id}/hide`, { method: "PUT" });
-      if (!response.ok) throw new Error("Failed to hide comment.");
-      fetchComments(); // Refresh comments after hiding
-    } catch (err) {
-      console.error("Error hiding comment:", err); // Log error
-      alert("Failed to hide comment.");
-    }
-  };
+  
 
   useEffect(() => {
     fetchComments();
@@ -100,7 +97,7 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       {loading && <p>Loading comments...</p>}
       {error && <p className="error">{error}</p>}
       <CommentForm
-        onSubmit={(text) => onReply(text, 0)}
+        onSubmit={(text) => handleSubmit(text)} // Handle new top-level comment
         placeholder="Write a comment..."
       />
       {!loading && !comments.length && !error && (
@@ -108,10 +105,10 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       )}
       <CommentList
         comments={comments}
-        onReply={onReply}
+        onReply={handleSubmit} // Handle replies
         onRate={onRate}
-        onEdit={onEdit}
-        onHide={onHide}
+        onEdit={() => {}} // Add edit logic if needed
+        onHide={() => {}} // Add hide logic if needed
       />
     </div>
   );

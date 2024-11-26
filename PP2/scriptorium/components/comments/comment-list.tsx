@@ -11,14 +11,13 @@ interface CommentListProps {
 
 interface Comment {
   id: number;
-  text: string;
+  content: string;
   rating: number;
   author: {
     username: string;
-  }; 
-  replies?: Comment[];
+  };
+  replies?: Comment[]; // Allow undefined for replies
 }
-
 
 const CommentList: React.FC<CommentListProps> = ({
   comments = [], // Default to an empty array if undefined
@@ -31,28 +30,27 @@ const CommentList: React.FC<CommentListProps> = ({
     return <p>No comments available. Be the first to comment!</p>;
   }
 
-  const formatCommentAuthor = (author: { id: number; username: string }) => {
-    return author.username;
-  };
+  // Debugging: Log comments being rendered
+  console.log("Rendering CommentList with comments:", comments);
 
   return (
     <div className="comment-list">
       {comments.map((comment) => (
         <div key={comment.id} className="comment-thread">
+          {/* Render the main comment */}
           <CommentItem
-            comment={{
-              ...comment,
-              author: comment.author, // Ensure proper author format
-            }}
+            comment={comment}
             onReply={onReply}
             onRate={onRate}
             onEdit={onEdit}
             onHide={onHide}
           />
-          {comment.replies && comment.replies.length > 0 && (
+
+          {/* Render replies recursively if they exist */}
+          {Array.isArray(comment.replies) && comment.replies.length > 0 && (
             <div className="comment-replies">
               <CommentList
-                comments={comment.replies}
+                comments={comment.replies} // Pass nested replies
                 onReply={onReply}
                 onRate={onRate}
                 onEdit={onEdit}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link"; 
-import BlogSearch from "@/components/general/search-page";
+import BlogSearch from "./blogs/blog-search";
 
 interface BlogPost {
   id: number;
