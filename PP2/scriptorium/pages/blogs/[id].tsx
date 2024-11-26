@@ -1,7 +1,7 @@
 import React from "react";
 import { GetServerSideProps } from "next";
-import { PrismaClient } from "@prisma/client";
 import BlogComments from "@/components/blogs/blog-comments";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

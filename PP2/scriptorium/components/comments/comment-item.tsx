@@ -3,7 +3,7 @@ import ReportModal from "../general/reports";
 
 interface Comment {
   id: number;
-  text: string;
+  content: string;
   rating: number;
   author: {
     username: string;
@@ -19,27 +19,82 @@ interface CommentItemProps {
   onHide: (id: number) => void;
 }
 
+const getAccessToken = (): string | null => {
+  return localStorage.getItem("accessToken");
+};
+
+const validateToken = (): string | null => {
+  const token = getAccessToken();
+  if (!token) {
+    alert("Please log in to perform this action.");
+    return null;
+  }
+  return token;
+};
+
 const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate }) => {
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isReportModalOpen, setReportModalOpen] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
-  const handleUpvote = () => onRate(comment.id, 1); // +1 for upvote
-  const handleDownvote = () => onRate(comment.id, -1); // -1 for downvote
+  const handleUpvote = async () => {
+    const token = validateToken();
+    if (!token) return;
 
-  const handleReplySubmit = (e: React.FormEvent) => {
+    console.log("upvote");
+
+    setIsActionLoading(true);
+    try {
+      await onRate(comment.id, 1); // +1 for upvote
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleDownvote = async () => {
+    const token = validateToken();
+    if (!token) return;
+
+    setIsActionLoading(true);
+    try {
+      await onRate(comment.id, -1); // -1 for downvote
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleReplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onReply(replyText, comment.id);
-    setReplyText("");
-    setIsReplying(false);
+    const token = validateToken();
+    if (!token) return;
+
+    if (!replyText.trim()) {
+      alert("Reply cannot be empty.");
+      return;
+    }
+
+    setIsActionLoading(true);
+    try {
+      await onReply(replyText.trim(), comment.id);
+      setReplyText("");
+      setIsReplying(false);
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   const handleReportSubmit = async (reason: string, explanation: string) => {
+    const token = validateToken();
+    if (!token) return;
+
+    setIsActionLoading(true);
     try {
       const response = await fetch(`/api/reports`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           targetId: comment.id,
@@ -58,22 +113,31 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate }) =
     } catch (error) {
       console.error("Error submitting report:", error);
       alert("An error occurred while submitting your report.");
+    } finally {
+      setIsActionLoading(false);
+      setReportModalOpen(false);
     }
-
-    setReportModalOpen(false);
   };
 
   return (
     <div className="comment-item">
       <p>
-        <strong>{comment.author.username}</strong>: {comment.text}
+        <strong>{comment.author.username}</strong>: {comment.content}
       </p>
       <div className="comment-actions">
-        <button onClick={handleUpvote}>👍 Upvote</button>
+        <button onClick={handleUpvote} disabled={isActionLoading}>
+          👍 Upvote
+        </button>
         <span>{comment.rating}</span>
-        <button onClick={handleDownvote}>👎 Downvote</button>
-        <button onClick={() => setIsReplying(!isReplying)}>Reply</button>
-        <button onClick={() => setReportModalOpen(true)}>Report</button>
+        <button onClick={handleDownvote} disabled={isActionLoading}>
+          👎 Downvote
+        </button>
+        <button onClick={() => setIsReplying(!isReplying)} disabled={isActionLoading}>
+          Reply
+        </button>
+        <button onClick={() => setReportModalOpen(true)} disabled={isActionLoading}>
+          Report
+        </button>
       </div>
       {isReplying && (
         <form onSubmit={handleReplySubmit} className="reply-form">
@@ -82,8 +146,11 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onReply, onRate }) =
             onChange={(e) => setReplyText(e.target.value)}
             placeholder="Write your reply..."
             required
+            disabled={isActionLoading}
           />
-          <button type="submit">Submit Reply</button>
+          <button type="submit" disabled={isActionLoading || !replyText.trim()}>
+            Submit Reply
+          </button>
         </form>
       )}
       <ReportModal
