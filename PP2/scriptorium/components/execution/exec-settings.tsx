@@ -62,30 +62,60 @@ export default function ExecSettings(props: ExecSettingsProps) {
     }
 
     const response = await axios.post(
-        `/api/templates`,
-        {
-          codeContent: code,
-          language: language,
-          title: title,
-          explanation: description,
-          tags: tags,
+      `/api/templates`,
+      {
+        codeContent: code,
+        language: language,
+        title: title,
+        explanation: description,
+        tags: tags,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, 
-          },
-        }
-      );
+      }
+    );
 
     if (response.status === 200) {
-        alert("Code saved successfully!");
-      } else {
-        alert("Failed to save code.");
-      }
+      alert("Code saved successfully!");
+    } else {
+      alert("Failed to save code.");
+    }
   };
 
   const forkCode = async () => {
     // TODO:for Erin's backend
+    // let code = props.code;
+    // let language = props.language;
+    // // tags, title and description can be accessed like this (thats literally the variable names)
+    // // const data = await response.json();
+    // const token = localStorage.getItem("accessToken"); // Or use cookies
+    // console.log(token);
+    // if (!token) {
+    //   alert("Login to fork code");
+    //   return;
+    // }
+    // const response = await axios.post(
+    //     `/api/templates`,
+    //     {
+    //       codeContent: code,
+    //       language: language,
+    //       title: title,
+    //       explanation: description,
+    //       tags: tags,
+    //     },
+    //     {
+    //       headers: {
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //     }
+    //   );
+    // if (response.status === 200) {
+    //     alert("Code saved successfully!");
+    //   } else {
+    //     alert("Failed to save code.");
+    //   }
   };
 
   return (
@@ -135,15 +165,15 @@ export default function ExecSettings(props: ExecSettingsProps) {
         </button>
       </div>
 
-        {/* Input and Output Fields */}
-        <div className="flex flex-col w-full">
-            <label htmlFor="input">Input (One Input Per Line):</label>
-            <textarea
-                id="input"
-                className="w-full"
-                value={stdin}
-                onChange={(e) => setStdin(e.target.value)}
-            ></textarea>
+      {/* Input and Output Fields */}
+      <div className="flex flex-col w-full">
+        <label htmlFor="input">Input (One Input Per Line):</label>
+        <textarea
+          id="input"
+          className="w-full"
+          value={stdin}
+          onChange={(e) => setStdin(e.target.value)}
+        ></textarea>
 
         <label htmlFor="output">Output:</label>
         <div id="output" className="w-full">

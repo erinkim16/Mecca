@@ -115,6 +115,7 @@
 import React from "react";
 import Link from "next/link";
 import NavBar from "@/components/general/nav-bar";
+import { useRouter } from "next/router";
 
 interface Tag {
   id: number;
@@ -149,6 +150,12 @@ interface TemplateDetailPageProps {
 const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
   template,
 }) => {
+  const router = useRouter();
+
+  const navigateToCode = (id: number) => {
+    router.push(`/execution?id=${id}`); // Passing as a query parameter
+  };
+
   return (
     <div className="template-detail-page">
       <NavBar />
@@ -195,11 +202,14 @@ const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
               </pre> */}
 
               <div className="mt-4 flex justify-between">
-                <Link href={template.code.filePath} passHref>
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                    Go to Code
-                  </button>
-                </Link>
+                {/* Button to navigate to the code execution page */}
+                <button
+                  onClick={() => navigateToCode(template.id)} // Pass template.id to navigateToCode
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                >
+                  Go to Code
+                </button>
+
                 <Link href="/template-search">
                   <button className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition">
                     Back to Templates
