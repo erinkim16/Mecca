@@ -5,8 +5,8 @@ interface CommentListProps {
   comments?: Comment[]; // Allow undefined
   onReply: (text: string, parentId: number) => void;
   onRate: (id: number, rating: number) => void;
-  onEdit: (id: number, text: string) => void;
-  onHide: (id: number) => void;
+  onReport: (id: number, reason: string) => void;
+  // onHide: (id: number) => void;
 }
 
 interface Comment {
@@ -23,8 +23,7 @@ const CommentList: React.FC<CommentListProps> = ({
   comments = [], // Default to an empty array if undefined
   onReply,
   onRate,
-  onEdit,
-  onHide,
+  onReport,
 }) => {
   if (!Array.isArray(comments) || comments.length === 0) {
     return <p>No comments available. Be the first to comment!</p>;
@@ -42,8 +41,7 @@ const CommentList: React.FC<CommentListProps> = ({
             comment={comment}
             onReply={onReply}
             onRate={onRate}
-            onEdit={onEdit}
-            onHide={onHide}
+            onReport={onReport}
           />
 
           {/* Render replies recursively if they exist */}
@@ -53,8 +51,7 @@ const CommentList: React.FC<CommentListProps> = ({
                 comments={comment.replies} // Pass nested replies
                 onReply={onReply}
                 onRate={onRate}
-                onEdit={onEdit}
-                onHide={onHide}
+                onReport={onReport}
               />
             </div>
           )}

@@ -11,7 +11,6 @@ interface Comment {
 }
 
 const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
-
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +24,7 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       const data = await response.json();
       setComments(data.comments || []);
     } catch (err) {
-      console.error("Error fetching comments:", err); // Log error
+      console.error("Error fetching comments:", err);
       setError("Failed to load comments. Please try again.");
     } finally {
       setLoading(false);
@@ -39,29 +38,58 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ content: text, blogId, parentId }),
       });
-      fetchComments();
-      if (!response.ok) {
-        throw new Error("Failed to post comment.");
-      }
+
+      if (!response.ok) throw new Error("Failed to post comment.");
+      const newComment = await response.json();
+      setComments((prev) =>
+        parentId
+          ? prev.map((comment) =>
+              comment.id === parentId
+                ? { ...comment, replies: [newComment, ...(comment.replies || [])] }
+                : comment
+            )
+          : [newComment, ...prev]
+      );
     } catch (error) {
-      throw error; // Let the error propagate back to the CommentForm
+      console.error("Error posting comment:", error);
     }
   };
-  
-  const onRate = async (id: number, rating: number) => {
-    console.log(rating)
+
+    const handleReport = async (id: number, report: string) => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await fetch('/api/comments/${id}/rate', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ report }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json(); // Parse the error message
+          throw new Error(errorData.message || "Failed to report comment.");
+        }
+    
+        alert("Comment reported successfully. Thank you!");
+      } catch (error) {
+        alert("Failed to report the comment. Please try again later");
+      }
+    };
+
+    const onRate = async (id: number, rating: number) => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       alert("You must be logged in to rate comments.");
       return;
     }
-     JSON.stringify({ rating })
+
     try {
-      console.log( JSON.stringify({ rating }))
       const response = await fetch(`/api/comments/${id}/rate`, {
         method: "PUT",
         headers: {
@@ -71,22 +99,21 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
         body: JSON.stringify({ rating }),
       });
 
-  
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("Failed to rate comment:", error.message);
-        throw new Error(error.message || "Failed to rate comment.");
-      }
-  
-      console.log(`Comment with ID ${id} rated with value ${rating}`);
-      fetchComments(); // Refresh comments to reflect the rating changes
+      if (!response.ok) throw new Error("Failed to rate comment.");
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.id === id
+            ? { ...comment, rating: comment.rating + rating }
+            : comment
+        )
+      );
     } catch (err) {
       console.error("Error rating comment:", err);
       alert("Failed to rate comment. Please try again later.");
+      return;
     }
   };
   
-
   useEffect(() => {
     fetchComments();
   }, [blogId]);
@@ -107,8 +134,7 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
         comments={comments}
         onReply={handleSubmit} // Handle replies
         onRate={onRate}
-        onEdit={() => {}} // Add edit logic if needed
-        onHide={() => {}} // Add hide logic if needed
+        onReport={handleReport}
       />
     </div>
   );

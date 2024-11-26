@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Content ID, reason, and Content type are required" });
     }
 
-    console.log("here");
+
     try {
       let existingReport;
 
