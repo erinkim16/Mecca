@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { verifyAccessToken } from "../../../utils/account/auth";
 import fs from "fs";
+import path from "path";
 import { saveCodeFile } from "../../../utils/code-saving/codeFileHandler";
 /**
  * Handles retrieving, updating, deleting, and forking code templates.
@@ -23,6 +24,7 @@ import { saveCodeFile } from "../../../utils/code-saving/codeFileHandler";
  */
 
 const prisma = new PrismaClient();
+// const fs = require("fs").promises;
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -34,13 +36,36 @@ export default async function handler(req, res) {
       try {
         const template = await prisma.codeTemplate.findUnique({
           where: { id: parseInt(id) },
-          include: { tags: true, code: true },
+          include: { tags: true, code: true, author: true },
         });
         if (!template)
           return res.status(404).json({ message: "Template not found." });
-        const codeContent = fs.readFileSync(template.code.filePath, "utf-8");
+        // const codeContent = fs.readFileSync(template.code.filePath, "utf-8");
 
-        res.status(200).json({ ...template, codeContent });
+        // res.status(200).json({ ...template, codeContent });
+
+        let codeContent = "";
+        if (template.code?.filePath) {
+          const codeDir = path.join(process.cwd(), template.code.filePath);
+          try {
+            codeContent = fs.readFile(codeDir, "utf-8", (err, data) => {
+              if (err) {
+                console.error("Error reading code file:", err.message);
+                return "";
+              }
+              return data;
+            });
+          } catch (readError) {
+            console.error("Error reading code file:", readError.message);
+            codeContent = ""; // Fallback
+          }
+        }
+
+        // Respond with the template data
+        res.status(200).json({
+          ...template,
+          code: { ...template.code, content: codeContent },
+        });
       } catch (error) {
         console.error("Error fetching template:", error);
         res.status(500).json({ message: "Failed to fetch template" });
@@ -79,12 +104,10 @@ export default async function handler(req, res) {
           // user is the owener, update existing template
 
           // Delete the preexisting code file
-          if (
-            template.code?.filePath &&
-            fs.existsSync(template.code.filePath)
-          ) {
+          const codeDir = path.join(process.cwd(), template.code.filePath);
+          if (template.code?.filePath && fs.existsSync(codeDir)) {
             try {
-              fs.unlinkSync(template.code.filePath);
+              fs.unlinkSync(codeDir);
             } catch (error) {
               console.error("Error deleting old code file (updating):", error);
               return res.status(500).json({
@@ -161,6 +184,7 @@ export default async function handler(req, res) {
           });
 
         // retrieve the code template to get associated file path
+
         const codeTemplate = await prisma.codeTemplate.findUnique({
           where: { id: parseInt(id) },
           include: { code: true },
@@ -174,12 +198,11 @@ export default async function handler(req, res) {
           }
 
           //  delete code file from the file system
-          if (
-            codeTemplate.code?.filePath &&
-            fs.existsSync(codeTemplate.code.filePath)
-          ) {
+          const codeDir = path.join(process.cwd(), template.code.filePath);
+
+          if (codeTemplate.code?.filePath && fs.existsSync(codeDir)) {
             try {
-              fs.unlinkSync(codeTemplate.code.filePath);
+              fs.unlinkSync(codeDir);
             } catch (error) {
               console.error("Error deleting old code file:", error);
               return res.status(500).json({
