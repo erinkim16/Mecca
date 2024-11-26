@@ -74,27 +74,54 @@ export default function ExecSettings(props: ExecSettingsProps) {
       return;
     }
 
-    const response = await axios.post(
-      `/api/templates`,
-      {
-        codeContent: code,
-        language: language,
-        title: title,
-        explanation: description,
-        tags: tags,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    if (props.templateInfo.id){
+      const response = await axios.put(
+        `/api/templates/${props.templateInfo.id}`,
+        {
+          codeContent: code,
+          language: language,
+          title: title,
+          explanation: description,
+          tags: tags,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Code edited successfully!");
+      } else {
+        alert("Failed to edit code.");
       }
-    );
-
-    if (response.status === 200) {
-      alert("Code saved successfully!");
-    } else {
-      alert("Failed to save code.");
     }
+
+    else{
+      const response = await axios.post(
+        `/api/templates`,
+        {
+          codeContent: code,
+          language: language,
+          title: title,
+          explanation: description,
+          tags: tags,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Code saved successfully!");
+      } else {
+        alert("Failed to save code.");
+      }
+    }
+    
   };
 
   const forkCode = async () => {
