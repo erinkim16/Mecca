@@ -1,3 +1,4 @@
+// for user specific template searching
 import React, { useState, useEffect } from "react";
 import SearchBar from "@/components/templates/searchBar";
 import Pagination from "@/components/general/pagination";
@@ -37,11 +38,14 @@ const TemplatesPage: React.FC = () => {
 
       // const data = await response.json();
       const token = localStorage.getItem("accessToken"); // Or use cookies
-      const response = await axios.get(`/api/templates?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        `/api/templates/my_templates?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setTemplates(response.data.templates);
       setTotalPages(response.data.pagination.totalPages);
       setCurrentPage(response.data.pagination.currentPage);
