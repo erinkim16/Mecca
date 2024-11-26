@@ -8,7 +8,7 @@ import Docker from 'dockerode';
 const docker = new Docker();
 const SUPPORTED_LANGUAGES = ["python", "java", "javascript", "golang", "elixir", "perl", "php", "ruby", "rust", "swift"];
 const TIMEOUT_TIME = 6000;
-const MAX_RESOURCES = 10 * 1024 * 1024; // 10MB
+const MAX_RESOURCES = 500 * 1024 * 1024; // 10MB
 
 
 /** Executes code in a specified language
@@ -292,7 +292,11 @@ async function executeCodeDocker(language, code, stdin) {
         imageName = 'my-java-env'; // Replace with your Java Docker image name
         fileExt = 'java';
         fileName = file + '.' + fileExt;
-        command = ['sh', '-c', `echo "${stdin}" | javac ${fileName} && echo "${stdin}" | java ${file}`];
+        command = [
+          'sh',
+          '-c',
+          `javac ${fileName} && echo "${stdin}" | java -cp . ${file}`
+        ];
         // Find and replace main class (has to be the same as filename)
         code = code.replace(/public class Main/, "public class " + filename);
         break;
@@ -359,9 +363,7 @@ async function executeCodeDocker(language, code, stdin) {
         Cmd: command,
         Tty: false,
         HostConfig: {
-          ReadonlyRootfs: true,
           NetworkMode: 'none',
-          CapDrop: ['ALL'],
           Binds: [`${tempDir}:/app`],  // Make sure this is the correct path
           AutoRemove: true,
           Memory: MAX_RESOURCES,
@@ -401,9 +403,10 @@ async function executeCodeDocker(language, code, stdin) {
   const timeoutPromise = new Promise((resolve, reject) => {
     const timer = setTimeout(async () => {
       console.warn('Container execution timeout, stopping container...');
+      stderrData = 'Code timed out after ' + TIMEOUT_TIME + 'ms';  // Set stderrData to 'timeout' instead of throwing an error
       try {
         await container.kill(); // Stop the container if it takes too long
-        stderrData = 'Code timed out after ' + TIMEOUT_TIME + 'ms';  // Set stderrData to 'timeout' instead of throwing an error
+
         resolve();  // Resolve the promise to prevent further processing
       } catch (err) {
         reject(err);  // Resolve the promise to avoid uncaught exceptions
@@ -516,11 +519,15 @@ async function executeCodeDocker(language, code, stdin) {
 //     pass`, "");
 
 function cleanUp(tempDir, filePath, filename, language) {
+  try {
     fs.rmSync(filePath);
 
     if (language === "java") {
         fs.rmSync(path.join(tempDir, filename) + ".class");
     }
+  } catch (error) {
+    return;
+  }
 }
 
 export { SUPPORTED_LANGUAGES, executeCode, executeCodeDocker };

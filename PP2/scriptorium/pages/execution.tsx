@@ -1,14 +1,32 @@
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 import CodeArea from "../components/execution/code-area"
 import ExecSettings from "../components/execution/exec-settings"
 import NavBar from "@/components/general/nav-bar";
+import axios from "axios";
 
 export default function Execution() {
     const [code, setCode] = useState("");
     const [language, setLanguage] = useState("python");
     const [codeWidth, setCodeWidth] = useState("60vw");
     const [fontSize, setFontSize] = useState(16);
+    const [templateInfo, setTemplateInfo] = useState({description: "", title: "", tags: [], id: 0});
+
+    const router = useRouter();
+    const { id } = router.query;
+
+    if (id) {
+        axios.get(`/api/templates/${id}`)
+            .then(response => {
+                setCode(response.data.code.content);
+                setLanguage(response.data.code.language);
+                setTemplateInfo(response.data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }
 
     useEffect(() => {
         const handleResize = () => {
@@ -41,7 +59,7 @@ export default function Execution() {
         </div>
     
         <div className="exec-options p-2 w-full md:flex-1">
-            <ExecSettings language={language} setLanguage={setLanguage} code={code} setCode={setCode}/>
+            <ExecSettings templateInfo={templateInfo} language={language} setLanguage={setLanguage} code={code} setCode={setCode}/>
         </div>
   
       </div>
