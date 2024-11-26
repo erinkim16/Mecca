@@ -16,6 +16,21 @@
   --ui-dark: #5d89a8;
 }
 
+
+.dark {
+  --background: #1a1a1a;  /* Dark mode background */
+  --foreground: #f7f7f7;  /* Light text on dark background */
+  --primary: #809bce;
+  --primary-dark: #5876b8;
+  --secondary: #c58fa8;
+  --secondary-dark: #914859;
+  --accent: #82b4a3;
+  --accent-dark: #4d8673;
+  --ui: #95b8d1 ;
+  --ui-dark: #5d89a8;
+}
+
+
 /* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

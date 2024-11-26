@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Content ID, reason, and Content type are required" });
     }
 
-    console.log("here");
+
     try {
       let existingReport;
 
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
           },
         });
 
-        res.status(200).json({ message: "Comment has been reported successfully", report });
+        return res.status(200).json({ message: "Comment has been reported successfully", report });
       } else {
         return res.status(400).json({ error: "Invalid content type" });
       }

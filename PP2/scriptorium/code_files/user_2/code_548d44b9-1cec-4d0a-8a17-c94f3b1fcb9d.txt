@@ -1,0 +1,5 @@
+# Elixir code
+input1 = IO.gets("Input 1: ") |> String.trim()
+input2 = IO.gets("Input 2: ") |> String.trim()
+
+IO.puts("You entered: #{input1} and #{input2}")

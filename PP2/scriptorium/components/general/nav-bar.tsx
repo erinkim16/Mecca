@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import LogoutButton from "@/components/profile/logout";
+import ThemeToggle from "./theme-toggle";
 
 // function NavBar() {
 //     // State to manage menu visibility on small screens
@@ -235,6 +236,7 @@ function NavBar() {
 
       {/* Desktop navigation links */}
       <div id="nav-links" className="hidden md:flex items-center space-x-6">
+        <ThemeToggle></ThemeToggle>
         {/* Templates Dropdown */}
         <div className="relative">
           {/* <button
@@ -364,6 +366,7 @@ function NavBar() {
           id="nav-links-sm"
           className="md:hidden fixed top-0 left-0 w-full h-screen bg-gray-800 bg-opacity-95 flex flex-col items-center justify-center space-y-6"
         >
+          <ThemeToggle></ThemeToggle>
           {/* Mobile versions of the desktop links */}
           <div className="flex flex-col items-center space-y-6">
             <a

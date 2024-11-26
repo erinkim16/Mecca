@@ -63,7 +63,14 @@ export default async function handler(req, res) {
       const totalPages = Math.ceil(totalComments / limit);
 
       return res.status(200).json({
-        comments,
+        comments: comments.map((comment) => ({
+          ...comment,
+          rating: comment.ratingScore, // Map ratingScore to rating
+          replies: comment.replies?.map((reply) => ({
+            ...reply,
+            rating: reply.ratingScore, // Map for replies too
+          })),
+        })),
         pagination: {
           currentPage: page,
           totalPages,

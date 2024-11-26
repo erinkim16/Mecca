@@ -45,7 +45,7 @@ export default function TagInput (props: TagInputProps) {
 
         .tag {
         padding: 5px;
-        background-color: #ddd;
+        background-color: #999;
         border-radius: 5px;
         cursor: pointer;
         user-select: none;
