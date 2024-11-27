@@ -97,11 +97,32 @@ async function editBlog(req, res, id, user) {
 
 
 async function deleteBlog(req, res, id, user) {
-  const blogPost = await prisma.blogPost.findUnique({ where: { id: parseInt(id) } });
-  if (!blogPost) return res.status(404).json({ error: "Blog post not found" });
-  if (blogPost.authorId !== user.id) return res.status(403).json({ error: "Unauthorized access" });
+  try {
+    const blogPost = await prisma.blogPost.findUnique({
+      where: { id: parseInt(id) },
+    });
 
-  await prisma.blogPost.delete({ where: { id: parseInt(id) } });
+    if (!blogPost) {
+      return res.status(404).json({ error: "Blog post not found" });
+    }
 
-  return res.status(200).json({ message: "Blog post deleted successfully" });
+    if (blogPost.authorId !== user.id) {
+      return res.status(403).json({ error: "Unauthorized access" });
+    }
+
+    // Delete related comments
+    await prisma.comment.deleteMany({
+      where: { blogPostId: parseInt(id) },
+    });
+
+    // Delete the blog post
+    await prisma.blogPost.delete({
+      where: { id: parseInt(id) },
+    });
+
+    return res.status(200).json({ message: "Blog post deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting blog post:", error);
+    return res.status(500).json({ error: "Failed to delete blog post" });
+  }
 }

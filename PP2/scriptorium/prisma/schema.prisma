@@ -95,7 +95,7 @@ model Comment {
   blogPostId   Int
   parentId     Int?
   ratingScore  Int @default(0)
-  blogPost     BlogPost @relation(fields: [blogPostId], references: [id])
+  blogPost     BlogPost  @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
   parent       Comment?  @relation("ParentComment", fields: [parentId], references: [id])
   replies      Comment[] @relation("ParentComment")
   reports      CommentReport[]
