@@ -25,7 +25,7 @@ const CommentList: React.FC<CommentListProps> = ({
   onReply,
   onRate,
   onReport,
-  onRemoveVote
+  onRemoveVote,
 }) => {
   if (!Array.isArray(comments) || comments.length === 0) {
     return <p>No comments available. Be the first to comment!</p>;

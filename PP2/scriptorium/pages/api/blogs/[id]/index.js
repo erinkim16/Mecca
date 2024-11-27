@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { verifyAccessToken } from "../../../../utils/account/auth";
-import { getTemplateIds } from "../index";
+import { verifyAccessToken } from "../../../utils/account/auth";
+import { getTemplateIds } from "../../../pages/api/blogs/index";
 
 /**
  * Allow users to edit and delete blog posts
@@ -75,7 +75,6 @@ async function getBlog(req, res, id) {
   }
 }
 
-
 async function editBlog(req, res, id, user) {
   try {
     const { title, description, content, newTemplates, newTags } = req.body;
@@ -116,16 +115,13 @@ async function editBlog(req, res, id, user) {
       });
 
       if (templates.length != newTemplates.length) {
-        return res
-          .status(400)
-          .json({
-            error: "Some code templates do not exist. Please check urls",
-          });
+        return res.status(400).json({
+          error: "Some code templates do not exist. Please check urls",
+        });
       }
-      
 
       updateData.codeTemplate = {
-        connect: templates.map((template) => ({ id: template.id })),  
+        connect: templates.map((template) => ({ id: template.id })),
       };
     }
 

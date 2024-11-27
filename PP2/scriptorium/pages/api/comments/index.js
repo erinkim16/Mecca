@@ -22,12 +22,12 @@ export default async function handler(req, res) {
           blogPostId: parsedBlogPostId,
           parentId: null, // Fetch only top-level comments
         },
-        orderBy: 
-        sortBy === "ratingHigh"
-          ? { ratingScore: "desc" } // Highest to lowest rating
-          : sortBy === "ratingLow"
-          ? { ratingScore: "asc" } // Lowest to highest rating
-          : { createdAt: "desc" }, // Default: Newest to oldest
+        orderBy:
+          sortBy === "ratingHigh"
+            ? { ratingScore: "desc" } // Highest to lowest rating
+            : sortBy === "ratingLow"
+            ? { ratingScore: "asc" } // Lowest to highest rating
+            : { createdAt: "desc" }, // Default: Newest to oldest
         select: {
           id: true,
           content: true, // Include the content of the comment
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
           parentId: null,
         },
       });
-    
+
       const totalPages = Math.ceil(totalComments / limit);
 
       return res.status(200).json({
@@ -98,24 +98,32 @@ export default async function handler(req, res) {
       }
 
       // Validate `authorId`
-    const authorExists = await prisma.user.findUnique({ where: { id: user.id } });
-    if (!authorExists) {
-      return res.status(400).json({ error: "Author does not exist." });
-    }
-
-    // Validate `blogPostId`
-    const blogPostExists = await prisma.blogPost.findUnique({ where: { id: parseInt(blogId) } });
-    if (!blogPostExists) {
-      return res.status(400).json({ error: "Blog post does not exist." });
-    }
-
-    // Validate `parentId` (if provided)
-    if (parentId) {
-      const parentCommentExists = await prisma.comment.findUnique({ where: { id: parseInt(parentId) } });
-      if (!parentCommentExists) {
-        return res.status(400).json({ error: "Parent comment does not exist." });
+      const authorExists = await prisma.user.findUnique({
+        where: { id: user.id },
+      });
+      if (!authorExists) {
+        return res.status(400).json({ error: "Author does not exist." });
       }
-    }
+
+      // Validate `blogPostId`
+      const blogPostExists = await prisma.blogPost.findUnique({
+        where: { id: parseInt(blogId) },
+      });
+      if (!blogPostExists) {
+        return res.status(400).json({ error: "Blog post does not exist." });
+      }
+
+      // Validate `parentId` (if provided)
+      if (parentId) {
+        const parentCommentExists = await prisma.comment.findUnique({
+          where: { id: parseInt(parentId) },
+        });
+        if (!parentCommentExists) {
+          return res
+            .status(400)
+            .json({ error: "Parent comment does not exist." });
+        }
+      }
 
       // when you create the comment -> check if you can send the username when creating one to fix the submit issue?
       const comment = await prisma.comment.create({
@@ -127,17 +135,14 @@ export default async function handler(req, res) {
         },
         include: {
           author: {
-        select: {
-          username: true,
-        },
+            select: {
+              username: true,
+            },
           },
         },
       });
       console.log(comment);
-      return res
-        .status(201)
-        .json(comment);
-      
+      return res.status(201).json(comment);
     } else {
       return res.status(405).json({ error: "Method not allowed" });
     }

@@ -122,38 +122,37 @@ export default function ExecSettings(props: ExecSettingsProps) {
 
   const forkCode = async () => {
     // TODO:for Erin's backend
-    // let code = props.code;
-    // let language = props.language;
-    // // tags, title and description can be accessed like this (thats literally the variable names)
-    // // const data = await response.json();
-    // const token = localStorage.getItem("accessToken"); // Or use cookies
-    // console.log(token);
-    // if (!token) {
-    //   alert("Login to fork code");
-    //   return;
-    // }
-    // const response = await axios.post(
-    //     `/api/templates`,
-    //     {
-    //       codeContent: code,
-    //       language: language,
-    //       title: title,
-    //       explanation: description,
-    //       tags: tags,
-    //     },
-    //     {
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //     }
-    //   );
-    // if (response.status === 200) {
-    //     alert("Code saved successfully!");
-    //   } else {
-    //     alert("Failed to save code.");
-    //   }
-
+    let code = props.code;
+    let language = props.language;
     const id = props.templateInfo.id;
+
+    // // tags, title and description can be accessed like this (thats literally the variable names)
+    const token = localStorage.getItem("accessToken"); // Or use cookies
+    console.log(token);
+    if (!token) {
+      alert("Login to fork code");
+      return;
+    }
+    const response = await axios.post(
+      `/api/templates/${id}`,
+      {
+        codeContent: code,
+        language: language,
+        title: title,
+        explanation: description,
+        tags: tags,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      alert("Code forked successfully!");
+    } else {
+      alert("Failed to save code.");
+    }
   };
 
   return (
