@@ -37,7 +37,11 @@ const fetchUserData = async (): Promise<number | null> => {
   }
 };
 
-const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) => {
+const BlogPostView: React.FC<BlogPostViewProps> = ({
+  blog,
+  onEdit,
+  onDelete,
+}) => {
   const { title, tags, content, author, createdAt } = blog;
   const [userId, setUserId] = useState<number | null>(null);
 
@@ -72,7 +76,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) =
               {node.content?.map((child: any, childIndex: number) => {
                 if (child.type === "text") {
                   let textElement = <span key={childIndex}>{child.text}</span>;
-  
+
                   // Apply marks like bold or italic
                   child.marks?.forEach((mark: any) => {
                     if (mark.type === "bold") {
@@ -81,12 +85,10 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) =
                       );
                     }
                     if (mark.type === "italic") {
-                      textElement = (
-                        <em key={childIndex}>{textElement}</em>
-                      );
+                      textElement = <em key={childIndex}>{textElement}</em>;
                     }
                   });
-  
+
                   return textElement;
                 }
                 return null; // Handle other types of child nodes if necessary
@@ -94,7 +96,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) =
             </p>
           );
         }
-  
+
         // Handle other node types (e.g., headings, lists)
         if (node.type === "heading") {
           const HeadingTag = `h${node.attrs?.level || 1}`;
@@ -109,7 +111,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) =
             })
           );
         }
-  
+
         return null; // Fallback for unsupported node types
       });
     } catch (err) {

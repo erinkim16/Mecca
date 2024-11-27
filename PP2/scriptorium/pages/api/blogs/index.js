@@ -10,42 +10,51 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const authHeader = req.headers.authorization;
     const user = verifyAccessToken(authHeader);
-  
+
     if (!user) {
       console.log("User not logged in");
       return res
         .status(401)
         .json({ error: "Please sign in to create a blog post" });
     }
-   
-    const { title, description, content, tags = [], codeTemplates = [] } = req.body;
-  
+
+    const {
+      title,
+      description,
+      content,
+      tags = [],
+      codeTemplates = [],
+    } = req.body;
+
     if (!title || !description || !content) {
       return res.status(400).json({
         error: "Blog posts must have a title, description, and valid content.",
       });
     }
-  
+
     try {
-      const templateIds = getTemplateIds(codeTemplates.map((url) => url.trim()));
+      const templateIds = getTemplateIds(
+        codeTemplates.map((url) => url.trim())
+      );
       const templates = await prisma.codeTemplate.findMany({
         where: {
           id: { in: templateIds },
         },
       });
-  
+
       if (templates.length !== templateIds.length) {
         return res.status(400).json({
           error: "Some code templates do not exist. Please check URLs.",
         });
       }
-  
+
       const blog = await prisma.blogPost.create({
         data: {
           title,
           description,
           createdAt: new Date(),
-          content: typeof content === "string" ? content : JSON.stringify(content),
+          content:
+            typeof content === "string" ? content : JSON.stringify(content),
           codeTemplate: {
             connect: templates.map((template) => ({ id: template.id })),
           },
@@ -75,16 +84,13 @@ export default async function handler(req, res) {
         ...blog,
         comments: [], // Explicitly set comments to an empty array
       };
-  
+
       res.status(200).json(response);
     } catch (error) {
       console.error("Error creating blog post:", error);
       return res.status(500).json({ error: "Blog post could not be created" });
     }
   } else if (req.method === "GET") {
-    const authHeader = req.headers.authorization;
-    const user = verifyAccessToken(authHeader);
-
     const query = req.query.query?.trim().toLowerCase();
     const tags = req.query.tags
       ? req.query.tags.split(",").map((tag) => tag.trim().toLowerCase())
@@ -94,79 +100,53 @@ export default async function handler(req, res) {
     try {
       const blogPosts = await prisma.blogPost.findMany({
         where: {
-          OR: [
-            {
-              hidden: false, // Publicly visible posts
-              AND: [
-                ...(query
-                  ? [
-                      {
-                        OR: [
-                          { title: { contains: query } },
-                          { content: { contains: query } },
-                        ],
-                      },
-                    ]
-                  : []),
-                ...(tags
-                  ? [
-                      {
-                        tags: {
-                          some: {
-                            name: {
-                              in: tags,
-                            },
-                          },
-                        },
-                      },
-                    ]
-                  : []),
-                ...(codeTemplate
-                  ? [
-                      {
-                        codeTemplate: {
-                          some: {
-                            title: {
-                              contains: codeTemplate,
-                            },
-                          },
-                        },
-                      },
-                    ]
-                  : []),
-              ],
-            },
-            // Include hidden posts if the user is the author
-            ...(user
+          hidden: false,
+          AND: [
+            // General query for title and content
+            ...(query
               ? [
                   {
-                    hidden: true,
-                    authorId: user.id,
+                    OR: [
+                      { title: { contains: query } },
+                      { content: { contains: query } },
+                    ],
+                  },
+                ]
+              : []),
+            ...(tags
+              ? [
+                  {
+                    tags: {
+                      some: {
+                        name: {
+                          in: tags, // Match any of the tags
+                        },
+                      },
+                    },
+                  },
+                ]
+              : []),
+            ...(codeTemplate
+              ? [
+                  {
+                    codeTemplate: {
+                      some: {
+                        title: {
+                          contains: codeTemplate,
+                        },
+                      },
+                    },
                   },
                 ]
               : []),
           ],
         },
         include: {
-          author: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
+          rating: true,
           tags: true,
           codeTemplate: true,
-          reports: {
-            select: {
-              reason: true, // Include report reasons
-              createdAt: true,
-            },
-          },
         },
-        orderBy: [
-          { ratingScore: "desc" },
-          { createdAt: "desc" },
-        ],
+        orderBy: [{ ratingScore: "desc" }, { createdAt: "desc" }],
         take: 10, // Limit results
       });
 
@@ -175,12 +155,11 @@ export default async function handler(req, res) {
       console.error("Error fetching blog posts:", error);
       res.status(500).json({ error: "Failed to fetch blog posts" });
     }
-    } else {
-      res.status(405).json({ error: "Method not allowed" });
-    }
+  } else {
+    res.status(405).json({ error: "Method not allowed" });
   }
-  
-  
+}
+
 // helper function to extract template ids to query them
 export function getTemplateIds(urls) {
   return urls
@@ -195,4 +174,3 @@ export function getTemplateIds(urls) {
     })
     .filter((id) => id !== null);
 }
-

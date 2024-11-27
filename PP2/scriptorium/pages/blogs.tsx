@@ -16,7 +16,9 @@ const BlogList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBlogs = async (params: URLSearchParams = new URLSearchParams()) => {
+  const fetchBlogs = async (
+    params: URLSearchParams = new URLSearchParams()
+  ) => {
     setLoading(true);
     setError(null);
 
@@ -68,7 +70,9 @@ const BlogList: React.FC = () => {
         {loading && <p className="loading">Loading blogs...</p>}
         {error && <p className="error">{error}</p>}
         {!loading && blogs.length === 0 && !error && (
-          <p className="no-blogs">No blogs found. Try adjusting your search criteria.</p>
+          <p className="no-blogs">
+            No blogs found. Try adjusting your search criteria.
+          </p>
         )}
         <ul className="blogs">
           {blogs.map((blog) => (
