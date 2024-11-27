@@ -113,4 +113,61 @@ async function refreshAccessToken() {
   }
 }
 
+export const authadminFetch = async (
+  url: string,
+  options: RequestInit = {}
+): Promise<any> => {
+  console.log("authenticating...");
+  const token =
+    localStorage.getItem("accessToken") || Cookies.get("accessToken");
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (response.status === 401) {
+    // Token expired or invalid, try to refresh
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      // Retry the original request with new token
+      return authenticatedFetch(url, options);
+    } else {
+      // Refresh failed, redirect to login
+      window.location.href = "/login-page";
+      throw new Error("Session expired");
+    }
+  }
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Request failed");
+  }
+
+  var user;
+  try {
+    const userid = localStorage.getItem("userId");
+    user = await axios.get(`/api/user/${userid}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch (err) {
+    console.error("Error fetching user", err);
+  }
+
+  // @ts-ignore
+  var role = user.role;
+
+  if (role !== "ADMIN") {
+    alert("Not an admin");
+    window.location.href = "/login-page";
+    throw new Error("Not an admin");
+  }
+
+  return response.json();
+};
+
 export default api;

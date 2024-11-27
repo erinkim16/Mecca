@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Pagination from "@/components/general/pagination";
+import { authadminFetch } from "@/utils/account/api";
 
 type BlogPost = {
   id: number;
@@ -20,7 +21,20 @@ const InappropriateBlogs = () => {
   const ITEMS_PER_PAGE = 10; // Adjust as needed
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        console.log("Verifying session through authenticatedFetch");
+        await authadminFetch("/api/protected");
+        console.log("Session valid, access granted");
+        setLoading(false);
+      } catch (error) {
+        console.error("Authentication failed:", error);
+        setLoading(false); // Ensure loading stops on error
+        window.location.href = "/login-page"; // Redirect to login page
+      }
+    };
     fetchBlogPosts();
+    checkAuth();
   }, [currentPage]);
 
   const fetchBlogPosts = async () => {
