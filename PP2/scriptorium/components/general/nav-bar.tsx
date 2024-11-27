@@ -287,6 +287,7 @@ function NavBar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPfpOpen, setIsPfpOpen] = useState(false);
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false); // State for Admin dropdown
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -298,6 +299,10 @@ function NavBar() {
 
   const toggleTemplatesDropdown = () => {
     setIsTemplatesOpen(!isTemplatesOpen);
+  };
+
+  const toggleAdminDropdown = () => {
+    setIsAdminOpen(!isAdminOpen);
   };
 
   const fetchUserData = async () => {
@@ -386,13 +391,32 @@ function NavBar() {
         >
           Blogs
         </a>
+        {/* Admin Dropdown */}
         {isAdmin && (
-          <a
-            href="/admin"
-            className="text-gray-200 hover:text-white transition duration-300"
-          >
-            Admin
-          </a>
+          <div className="relative">
+            <a
+              className="text-gray-200 hover:text-white transition duration-300"
+              onClick={toggleAdminDropdown}
+            >
+              Admin
+            </a>
+            {isAdminOpen && (
+              <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-md">
+                <a
+                  href="/admin/blogs"
+                  className="block px-4 py-2 text-gray-700 hover:text-white transition duration-300"
+                >
+                  Blogs
+                </a>
+                <a
+                  href="/admin/comments"
+                  className="block px-4 py-2 text-gray-700 hover:text-white transition duration-300"
+                >
+                  Comments
+                </a>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="relative">

@@ -1,0 +1,116 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Pagination from "@/components/general/pagination";
+
+type BlogPost = {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  reportsCount: number;
+  hidden: boolean;
+};
+
+const InappropriateBlogs = () => {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const ITEMS_PER_PAGE = 10; // Adjust as needed
+
+  useEffect(() => {
+    fetchBlogPosts();
+  }, [currentPage]);
+
+  const fetchBlogPosts = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      const response = await axios.get(`/api/admin/inappropriate-blogs`, {
+        params: { page: currentPage, perPage: ITEMS_PER_PAGE },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const { posts, totalPages } = response.data;
+
+      setBlogPosts(posts);
+      setTotalPages(totalPages);
+    } catch (error) {
+      console.error("Failed to fetch blog posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleHideBlog = async (blogId: number) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      await axios.put(`/api/admin/inappropriate-blogs`, {
+        blogId,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setBlogPosts((prev) =>
+        prev.map((post) =>
+          post.id === blogId ? { ...post, hidden: true } : post
+        )
+      );
+      alert("Blog hidden successfully.");
+    } catch (error) {
+      console.error("Failed to hide blog post:", error);
+      alert("Failed to hide the blog post.");
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Inappropriate Blog Posts</h1>
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="space-y-4">
+          {blogPosts.map((post) => (
+            <div
+              key={post.id}
+              className={`p-4 border rounded shadow ${
+                post.hidden ? "bg-gray-200" : "bg-white"
+              }`}
+            >
+              <h2 className="text-xl font-semibold">{post.title}</h2>
+              <p className="text-sm text-gray-600">
+                Created: {new Date(post.createdAt).toLocaleDateString()}
+              </p>
+              <p className="text-gray-800">{post.description}</p>
+              <p className="text-red-500">Reports: {post.reportsCount}</p>
+              <button
+                onClick={() => handleHideBlog(post.id)}
+                disabled={post.hidden}
+                className={`mt-2 px-4 py-2 rounded ${
+                  post.hidden
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500 text-white hover:bg-red-600"
+                }`}
+              >
+                {post.hidden ? "Hidden" : "Hide Content"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+    </div>
+  );
+};
+
+export default InappropriateBlogs;
