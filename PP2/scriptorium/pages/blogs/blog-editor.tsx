@@ -31,10 +31,15 @@ const BlogEditorPage = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div>
-      <NavBar></NavBar>
+    <>
+    
+    <NavBar></NavBar>
+    <div className="m-8">
+      
       <BlogEditor />
     </div>
+    </>
+    
   );
 };
 

@@ -161,8 +161,11 @@ const TemplatesPage: React.FC = () => {
   };
 
   return (
-    <div className="code-search-page">
-      <NavBar />
+
+    <>
+    
+    <NavBar/>
+    <div className="code-search-page m-8">
       <h1>Code Search</h1>
       <SearchBar onSearch={handleSearch} />
       <TemplateList templates={templates} />
@@ -172,6 +175,9 @@ const TemplatesPage: React.FC = () => {
         onPageChange={handlePageChange}
       />
     </div>
+    
+    </>
+    
   );
 };
 

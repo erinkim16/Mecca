@@ -162,8 +162,10 @@ const BlogList: React.FC = () => {
   }, []);
 
   return (
-    <div className="blog-list">
-      <NavBar />
+    <>
+    <NavBar />
+    <div className="blog-list m-8">
+      
       <h1>Search Blog Posts</h1>
       <BlogSearch onSearch={handleSearch} />
 
@@ -206,6 +208,7 @@ const BlogList: React.FC = () => {
 </div>
       </main>
     </div>
+    </>
   );
 };
 
