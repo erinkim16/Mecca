@@ -1,6 +1,6 @@
 // Credit: ChatGPT used to help generate this
 
-import React, { useState, KeyboardEvent, ChangeEvent } from 'react';
+import React, { useState, KeyboardEvent, ChangeEvent } from "react";
 
 interface TagInputProps {
   tags: string[];
@@ -9,7 +9,7 @@ interface TagInputProps {
   setInput: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function TagInput (props: TagInputProps) {
+export default function TagInput(props: TagInputProps) {
   const { tags, setTags, input, setInput } = props;
 
   // Function to handle the input change
@@ -19,10 +19,10 @@ export default function TagInput (props: TagInputProps) {
 
   // Function to handle when the user presses "Enter"
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
-    if (event.key === 'Enter' && input.trim() !== '') {
+    if (event.key === "Enter" && input.trim() !== "") {
       // Add the tag only if it's not empty
       setTags((prevTags) => [...prevTags, input.trim()]);
-      setInput(''); // Clear input field after adding the tag
+      setInput(""); // Clear input field after adding the tag
     }
   };
 
@@ -33,24 +33,25 @@ export default function TagInput (props: TagInputProps) {
 
   return (
     <div>
-       <style jsx>{`
-        /* Add this in your App.css or styles.css */
+      <style jsx>
+        {`
+          /* Add this in your App.css or styles.css */
 
+          .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+          }
 
-        .tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-        }
-
-        .tag {
-        padding: 5px;
-        background-color: #999;
-        border-radius: 5px;
-        cursor: pointer;
-        user-select: none;
-        }
-    `} </style>
+          .tag {
+            padding: 5px;
+            background-color: #999;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+          }
+        `}
+      </style>
 
       <div className="tag-input-container">
         {/* Display tags */}
@@ -75,9 +76,6 @@ export default function TagInput (props: TagInputProps) {
           placeholder="Type and press Enter to add tags"
         />
       </div>
-
     </div>
   );
 }
-
-

@@ -89,6 +89,7 @@ model CodeTemplate {
 model Comment {
   id           Int       @id @default(autoincrement())
   content      String
+  createdAt   DateTime     @default(now())
   author       User      @relation(fields: [authorId], references: [id])
   authorId     Int
   blogPostId   Int

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import Link from "next/link"; 
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import NavBar from "@/components/general/nav-bar";
 import BlogSearch from "./blogs/blog-search";
 
@@ -16,6 +16,26 @@ const BlogList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchBlogs = async (params: URLSearchParams = new URLSearchParams()) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/blogs?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch blogs");
+      }
+
+      const data = await response.json();
+      setBlogs(data);
+    } catch (err) {
+      console.error("Error fetching blogs:", err);
+      setError("Failed to fetch blogs. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSearch = async ({
     query,
     tags,
@@ -25,53 +45,47 @@ const BlogList: React.FC = () => {
     tags?: string[];
     codeTemplate?: string;
   }) => {
-    setLoading(true);
-    setError(null);
+    const params = new URLSearchParams();
+    if (query) params.append("query", query);
+    if (tags && tags.length > 0) params.append("tags", tags.join(","));
+    if (codeTemplate) params.append("codeTemplate", codeTemplate);
 
-    try {
-      const params = new URLSearchParams();
-      if (query) params.append("query", query);
-      if (tags && tags.length > 0) params.append("tags", tags.join(","));
-      if (codeTemplate) params.append("codeTemplate", codeTemplate);
-
-      const response = await fetch(`/api/blogs?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch blogs");
-      }
-
-      const data = await response.json();
-      setBlogs(data);
-    } catch (err) {
-      console.error("Search error:", err);
-      setError("Failed to fetch blogs. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    await fetchBlogs(params);
   };
+
+  // Fetch all blogs when the component mounts
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
 
   return (
     <div className="blog-list">
       <NavBar />
       <h1>Search Blog Posts</h1>
       <BlogSearch onSearch={handleSearch} />
-      {loading && <p>Loading...</p>}
-      {error && <p className="error">{error}</p>}
-      {blogs.length === 0 && !loading && !error && <p>No blogs found.</p>}
-      <ul>
-        {blogs.map((blog) => (
-          <li key={blog.id} className="blog-item">
-            <h2>
-              <Link href={`/blogs/${blog.id}`}>{blog.title}</Link>
-            </h2>
-            <p>{blog.description}</p>
-            <p>Tags: {blog.tags.map((tag) => `#${tag.name}`).join(", ")}</p>
-            <p>
-              Code Templates:{" "}
-              {blog.codeTemplate.map((template) => template.title).join(", ")}
-            </p>
-          </li>
-        ))}
-      </ul>
+
+      <main>
+        {loading && <p className="loading">Loading blogs...</p>}
+        {error && <p className="error">{error}</p>}
+        {!loading && blogs.length === 0 && !error && (
+          <p className="no-blogs">No blogs found. Try adjusting your search criteria.</p>
+        )}
+        <ul className="blogs">
+          {blogs.map((blog) => (
+            <li key={blog.id} className="blog-item">
+              <h2>
+                <Link href={`/blogs/${blog.id}`}>{blog.title}</Link>
+              </h2>
+              <p>{blog.description}</p>
+              <p>Tags: {blog.tags.map((tag) => `#${tag.name}`).join(", ")}</p>
+              <p>
+                Code Templates:{" "}
+                {blog.codeTemplate.map((template) => template.title).join(", ")}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </main>
     </div>
   );
 };

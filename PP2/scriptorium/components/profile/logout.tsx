@@ -12,14 +12,14 @@ const LogoutButton: React.FC = () => {
     // Remove tokens from cookies
     Cookies.remove("accessToken");
     Cookies.remove("refreshToken");
-    router.push("/login");
+    router.push("/login-page");
   };
 
   return (
     <button
       className="button-pink"
       onClick={handleLogout}
-      style={{ marginTop: "20px"}}
+      style={{ marginTop: "20px" }}
     >
       Logout
     </button>

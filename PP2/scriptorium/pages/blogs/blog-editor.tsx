@@ -1,14 +1,16 @@
-import React from "react";
-import BlogEditor from "../../components/blogs/blog-editor";
-import NavBar from "@/components/general/nav-bar";
+// pages/create-blog.tsx
 
-const BlogEditorPage = () => {
+import React from "react";
+import BlogEditor from "@/components/blogs/blog-editor"; // Adjust the path as needed
+import NavBar from "@/components/general/nav-bar"; // Assuming a NavBar component exists
+
+const CreateBlogPage = () => {
   return (
-    <div>
-      <NavBar></NavBar>
+    <div className="create-blog-page">
+      <NavBar />
       <BlogEditor />
     </div>
   );
 };
 
-export default BlogEditorPage;
+export default CreateBlogPage;

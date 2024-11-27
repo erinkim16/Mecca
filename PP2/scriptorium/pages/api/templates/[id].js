@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { verifyAccessToken } from "../../../utils/account/auth";
 // import fs from "fs";
-import * as fs from 'fs';
+import * as fs from "fs";
 import path from "path";
 import { saveCodeFile } from "../../../utils/code-saving/codeFileHandler";
 /**
@@ -59,8 +59,6 @@ export default async function handler(req, res) {
             codeContent = ""; // Fallback
           }
         }
-
-        
 
         // Respond with the template data
         res.status(200).json({

@@ -82,73 +82,99 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Blog post could not be created" });
     }
   } else if (req.method === "GET") {
-      const query = req.query.query?.trim().toLowerCase();
-      const tags = req.query.tags
+    const authHeader = req.headers.authorization;
+    const user = verifyAccessToken(authHeader);
+
+    const query = req.query.query?.trim().toLowerCase();
+    const tags = req.query.tags
       ? req.query.tags.split(",").map((tag) => tag.trim().toLowerCase())
       : null;
-      const codeTemplate = req.query.codeTemplate?.trim().toLowerCase();
-    
-      try {
-        const blogPosts = await prisma.blogPost.findMany({
-          where: {
-            hidden: false,
-            AND: [
-              // General query for title and content
-              ...(query
-                ? [
-                    {
-                      OR: [
-                        { title: { contains: query } },
-                        { content: { contains: query } },
-                      ],
-                    },
-                  ]
-                : []),
-              ...(tags
-                ? [
-                    {
-                      tags: {
-                        some: {
-                          name: {
-                            in: tags, // Match any of the tags
+    const codeTemplate = req.query.codeTemplate?.trim().toLowerCase();
+
+    try {
+      const blogPosts = await prisma.blogPost.findMany({
+        where: {
+          OR: [
+            {
+              hidden: false, // Publicly visible posts
+              AND: [
+                ...(query
+                  ? [
+                      {
+                        OR: [
+                          { title: { contains: query } },
+                          { content: { contains: query } },
+                        ],
+                      },
+                    ]
+                  : []),
+                ...(tags
+                  ? [
+                      {
+                        tags: {
+                          some: {
+                            name: {
+                              in: tags,
+                            },
                           },
                         },
                       },
-                    },
-                  ]
-                : []),
-              ...(codeTemplate
-                ? [
-                    {
-                      codeTemplate: {
-                        some: {
-                          title: {
-                            contains: codeTemplate,
+                    ]
+                  : []),
+                ...(codeTemplate
+                  ? [
+                      {
+                        codeTemplate: {
+                          some: {
+                            title: {
+                              contains: codeTemplate,
+                            },
                           },
                         },
                       },
-                    },
-                  ]
-                : []),
-            ],
-          },
-          include: {
-            rating: true,
-            tags: true,
-            codeTemplate: true,
-          },
-          orderBy: [
-            { ratingScore: "desc" },
-            { createdAt: "desc" },
+                    ]
+                  : []),
+              ],
+            },
+            // Include hidden posts if the user is the author
+            ...(user
+              ? [
+                  {
+                    hidden: true,
+                    authorId: user.id,
+                  },
+                ]
+              : []),
           ],
-          take: 10, // Limit results
-        });
-    
-        res.status(200).json(blogPosts);
-      } catch (error) {
-        console.error("Error fetching blog posts:", error);
-        res.status(500).json({ error: "Failed to fetch blog posts" });
-      }
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+          tags: true,
+          codeTemplate: true,
+          reports: {
+            select: {
+              reason: true, // Include report reasons
+              createdAt: true,
+            },
+          },
+        },
+        orderBy: [
+          { ratingScore: "desc" },
+          { createdAt: "desc" },
+        ],
+        take: 10, // Limit results
+      });
+
+      res.status(200).json(blogPosts);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ error: "Failed to fetch blog posts" });
+    }
     } else {
       res.status(405).json({ error: "Method not allowed" });
     }

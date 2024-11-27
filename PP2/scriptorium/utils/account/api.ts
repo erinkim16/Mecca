@@ -73,7 +73,7 @@ export const authenticatedFetch = async (
       return authenticatedFetch(url, options);
     } else {
       // Refresh failed, redirect to login
-      window.location.href = "/user/login";
+      window.location.href = "/login-page";
       throw new Error("Session expired");
     }
   }
@@ -93,12 +93,12 @@ async function refreshAccessToken() {
   if (!refreshToken) return false;
 
   try {
-    const response = await fetch("/api/auth/refresh", {
+    const response = await fetch("/api/user/refresh", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ refreshToken }),
+      body: JSON.stringify({ refreshToken: `Bearer ${refreshToken}` }),
     });
 
     if (response.ok) {

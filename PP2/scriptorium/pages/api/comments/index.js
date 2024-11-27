@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
-      const { blogPostId } = req.query;
+      const { blogPostId, sortBy } = req.query;
 
       if (!blogPostId || isNaN(parseInt(blogPostId))) {
         return res.status(400).json({ error: "Invalid or missing blogPostId" });
@@ -22,32 +22,35 @@ export default async function handler(req, res) {
           blogPostId: parsedBlogPostId,
           parentId: null, // Fetch only top-level comments
         },
+        orderBy: 
+        sortBy === "ratingHigh"
+          ? { ratingScore: "desc" } // Highest to lowest rating
+          : sortBy === "ratingLow"
+          ? { ratingScore: "asc" } // Lowest to highest rating
+          : { createdAt: "desc" }, // Default: Newest to oldest
         select: {
           id: true,
           content: true, // Include the content of the comment
           ratingScore: true,
+          createdAt: true,
           author: {
             select: {
-              id: true,
               username: true,
             },
           },
           replies: {
+            orderBy: { createdAt: "desc" },
             select: {
               id: true,
               content: true, // Include content for replies as well
               ratingScore: true,
               author: {
                 select: {
-                  id: true,
                   username: true,
                 },
               },
             },
           },
-        },
-        orderBy: {
-          ratingScore: "desc", // Sort by rating score in descending order
         },
         skip,
         take: limit,
@@ -59,7 +62,7 @@ export default async function handler(req, res) {
           parentId: null,
         },
       });
-      console.log(comments);
+    
       const totalPages = Math.ceil(totalComments / limit);
 
       return res.status(200).json({
@@ -83,7 +86,9 @@ export default async function handler(req, res) {
       const user = verifyAccessToken(authHeader);
 
       if (!user) {
-        return res.status(401).json({ error: "Please log in to post a comment" });
+        return res
+          .status(401)
+          .json({ error: "Please log in to post a comment" });
       }
 
       const { content, blogId, parentId } = req.body;
@@ -92,6 +97,27 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Content cannot be empty" });
       }
 
+      // Validate `authorId`
+    const authorExists = await prisma.user.findUnique({ where: { id: user.id } });
+    if (!authorExists) {
+      return res.status(400).json({ error: "Author does not exist." });
+    }
+
+    // Validate `blogPostId`
+    const blogPostExists = await prisma.blogPost.findUnique({ where: { id: parseInt(blogId) } });
+    if (!blogPostExists) {
+      return res.status(400).json({ error: "Blog post does not exist." });
+    }
+
+    // Validate `parentId` (if provided)
+    if (parentId) {
+      const parentCommentExists = await prisma.comment.findUnique({ where: { id: parseInt(parentId) } });
+      if (!parentCommentExists) {
+        return res.status(400).json({ error: "Parent comment does not exist." });
+      }
+    }
+
+      // when you create the comment -> check if you can send the username when creating one to fix the submit issue?
       const comment = await prisma.comment.create({
         data: {
           content: content.trim(),
@@ -99,9 +125,19 @@ export default async function handler(req, res) {
           blogPostId: parseInt(blogId),
           parentId: parentId ? parseInt(parentId) : null,
         },
+        include: {
+          author: {
+        select: {
+          username: true,
+        },
+          },
+        },
       });
-
-      return res.status(201).json({ message: "Comment added successfully", comment });
+      console.log(comment);
+      return res
+        .status(201)
+        .json(comment);
+      
     } else {
       return res.status(405).json({ error: "Method not allowed" });
     }
