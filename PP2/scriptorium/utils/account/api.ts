@@ -154,12 +154,14 @@ export const authadminFetch = async (
     user = await axios.get(`/api/user/${userid}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    console.log("user:", user.data);
   } catch (err) {
     console.error("Error fetching user", err);
   }
 
   // @ts-ignore
-  var role = user.role;
+  var role = user.data.role;
+  console.log("role rn:", role);
 
   if (role !== "ADMIN") {
     alert("Not an admin");
