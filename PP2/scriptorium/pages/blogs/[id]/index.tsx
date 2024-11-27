@@ -3,6 +3,7 @@ import { GetServerSideProps } from "next";
 import BlogComments from "@/components/blogs/blog-comments";
 import BlogPostView from "@/components/blogs/blog-view"; // Add this line to import BlogPostView
 import { PrismaClient } from "@prisma/client";
+import axios from "axios";
 import { useRouter } from "next/router";
 
 const prisma = new PrismaClient();
@@ -29,10 +30,35 @@ const BlogPostPage: React.FC<{ blog: BlogPost | null }> = ({ blog }) => {
     router.push(`/blogs/${blog.id}/edit-blog`);
   };
 
-  const handleDelete = () => {
-    console.log("Delete blog post", blog.id);
-    // Implement your delete logic here
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this blog post? This action cannot be undone.")) {
+      return; // Exit if the user cancels the deletion
+    }
+  
+    try {
+      const token = localStorage.getItem("accessToken");
+  
+      if (!token) {
+        alert("You must be logged in to delete a blog post.");
+        return;
+      }
+  
+      const response = await axios.delete(`/api/blogs/${blog.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      if (response.status === 200) {
+        alert("Blog post deleted successfully.");
+        router.push("/blogs"); // Redirect to all blogs
+      } else {
+        alert("Failed to delete the blog post. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      alert("An error occurred while deleting the blog post. Please try again.");
+    }
   };
+  
 
   return (
     <div className="blog-page">
