@@ -4,46 +4,44 @@ import { verifyAccessToken } from "../../../../utils/account/auth";
 const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
-  // Validate HTTP method
-  if (req.method !== "PUT") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
 
-  const authHeader = req.headers.authorization;
-  const user = verifyAccessToken(authHeader);
+    if (req.method !== "POST"){
+        return res.status(405).json({ error: "Method not allowed"});
+    }
 
-  if (!user) {
-    return res.status(401).json({ error: "Unauthorized user" });
-  }
+    const authHeader = req.headers.authorization;
+    const user = verifyAccessToken(authHeader);
 
-  const { id } = req.query; // Extract the comment ID from the query
-  const { rating } = req.body; // Extract the rating from the request body
+    if (!user) {
+        return res.status(401).json({ error: "Unauthorized user" });
+    }
 
-  if (!id || isNaN(parseInt(id))) {
-    return res.status(400).json({ error: "Invalid or missing comment ID" });
-  }
+    const { id } = req.query;
+    const { reason } = req.body;
 
-  if (typeof rating !== "number" || (rating !== 1 && rating !== -1)) {
-    return res.status(400).json({ error: "Invalid rating value. Must be 1 (upvote) or -1 (downvote)." });
-  }
+    if (!id || isNaN(parseInt(id))) {
+        return res.status(400).json({ error: "Invalid or missing blog ID" });
+      }
 
-  try {
-    // Update the comment's rating score
-    const updatedComment = await prisma.blogPost.update({
-      where: { id: parseInt(id) },
-      data: {
-        ratingScore: {
-          increment: rating, // Increment or decrement the rating score
-        },
-      },
-    });
+    let report;
 
-    return res.status(200).json({
-      message: "Blog rating updated successfully",
-      updatedComment,
-    });
-  } catch (error) {
-    console.error("Error updating blog rating:", error);
-    return res.status(500).json({ error: "Failed to update blog rating" });
-  }
+    try {
+        report = await prisma.blogReport.create({
+            data: {
+                reason: JSON.stringify({ reason }),
+                blog: {
+                    connect: { id: parseInt(id) },
+                },
+                reporter: {
+                    connect: { id: user.id },
+                },
+            },
+        });
+        
+        return res.status(200).json({ message: "Blog has been reported successfully", report });
+
+    } catch (error) {
+        return res.status(500).json( { error: "Blog could not be reported"});
+    }
+
 }

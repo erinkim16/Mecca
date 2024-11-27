@@ -36,6 +36,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   onRemoveVote,
   onReport,
 }) => {
+  const { id, author, userVote } = comment;
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -45,15 +46,16 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleVote = async (vote: number) => {
     const token = validateToken();
     if (!token) return;
-
+    console.log("in remove")
     if (isActionLoading) return; // Prevent concurrent actions
 
     setIsActionLoading(true);
     try {
-      if (comment.userVote === vote) {
-        await onRemoveVote(comment.id); // Remove the vote if it's the same as the current vote
+      if (userVote === vote) {
+
+        await onRemoveVote(id); // Remove the vote if it's the same as the current vote
       } else {
-        await onRate(comment.id, vote); // Otherwise, cast the vote
+        await onRate(id, vote); // Otherwise, cast the vote
       }
     } catch (error) {
       console.error(`Error handling vote for comment ID: ${comment.id}`, error);
