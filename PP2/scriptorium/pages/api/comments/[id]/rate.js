@@ -48,7 +48,7 @@ export default async function handler(req, res) {
           data: { ratingScore: { increment: ratingAdjustment } },
         });
   
-  
+      console.log(updated);
       return res.status(200).json( updated );
     } catch (error) {
       console.error("Error updating comment rating:", error);

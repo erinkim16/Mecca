@@ -27,18 +27,10 @@ const CommentList: React.FC<CommentListProps> = ({
   onReport,
   onRemoveVote,
 }) => {
-  if (!Array.isArray(comments) || comments.length === 0) {
-    return <p>No comments available. Be the first to comment!</p>;
-  }
-
-  // Debugging: Log comments being rendered
-  console.log("Rendering CommentList with comments:", comments);
-
   return (
     <div className="comment-list">
       {comments.map((comment) => (
         <div key={comment.id} className="comment-thread">
-          {/* Render the main comment */}
           <CommentItem
             comment={comment}
             onReply={onReply}
@@ -46,19 +38,6 @@ const CommentList: React.FC<CommentListProps> = ({
             onReport={onReport}
             onRemoveVote={onRemoveVote}
           />
-
-          {/* Render replies recursively if they exist */}
-          {Array.isArray(comment.replies) && comment.replies.length > 0 && (
-            <div className="comment-replies">
-              <CommentList
-                comments={comment.replies} // Pass nested replies
-                onReply={onReply}
-                onRate={onRate}
-                onReport={onReport}
-                onRemoveVote={onRemoveVote}
-              />
-            </div>
-          )}
         </div>
       ))}
     </div>

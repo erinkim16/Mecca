@@ -27,11 +27,11 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        `/api/comments?blogPostId=${blogId}&sortBy=${sortBy}`
-      );
+      const response = await fetch(`/api/comments?blogPostId=${blogId}&sortBy=${sortBy}`);
       if (!response.ok) throw new Error("Failed to fetch comments.");
       const data = await response.json();
+  
+      // Make sure the data has properly nested replies
       setComments(data.comments || []);
     } catch (err) {
       console.error("Error fetching comments:", err);
@@ -40,6 +40,7 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       setLoading(false);
     }
   };
+  
 
   const handleSortChange = (newSortBy: string) => {
     setSortBy(newSortBy);
@@ -116,7 +117,6 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       alert("You must be logged in to rate comments.");
       return;
     }
-    console.log("onRate function called with ID:", id, "Rating:", rating);
 
     try {
       const response = await fetch(`/api/comments/${id}/rate`, {

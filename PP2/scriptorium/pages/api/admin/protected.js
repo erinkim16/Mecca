@@ -1,6 +1,6 @@
 import { verifyAccessToken } from "../../../utils/account/auth";
 
-export default function handler(req, res) {
+export default function adminMiddleware(req, res) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
