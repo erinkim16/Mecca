@@ -560,6 +560,10 @@ function cleanUp(tempDir, filePath, filename, language) {
     if (language === "java") {
       fs.rmSync(path.join(tempDir, filename) + ".class");
     }
+
+    if (language === "c" || language === "cpp"){
+      fs.rmSync(path.join(tempDir, filename));
+    }
   } catch (error) {
     return;
   }

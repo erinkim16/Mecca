@@ -38,6 +38,7 @@ export default function Execution() {
             title: response.data.title,
             explanation: response.data.explanation,
             tags: response.data.tags,
+            // @ts-ignore
             id: parseInt(id),
           });
           console.log(response);
