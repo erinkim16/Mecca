@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Pagination from "@/components/general/pagination";
 import { authadminFetch } from "@/utils/account/api";
+import NavBar from "@/components/general/nav-bar";
 
 type BlogPost = {
   id: number;
@@ -82,7 +83,10 @@ const InappropriateBlogs = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+
+    <>
+    <NavBar></NavBar>
+    <div className="container mx-auto p-4 m-8">
       <h1 className="text-2xl font-bold mb-4">Inappropriate Blog Posts</h1>
 
       {loading ? (
@@ -124,6 +128,8 @@ const InappropriateBlogs = () => {
         onPageChange={setCurrentPage}
       />
     </div>
+    </>
+    
   );
 };
 

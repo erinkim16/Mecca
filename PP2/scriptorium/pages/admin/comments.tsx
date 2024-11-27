@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Pagination from "@/components/general/pagination";
+import NavBar from "@/components/general/nav-bar";
 
 type Comment = {
   id: number;
@@ -67,6 +68,10 @@ const InappropriateComments = () => {
   };
 
   return (
+    <>
+
+    <NavBar></NavBar>
+    
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Inappropriate Comments</h1>
 
@@ -108,6 +113,9 @@ const InappropriateComments = () => {
         onPageChange={setCurrentPage}
       />
     </div>
+    
+    </>
+    
   );
 };
 
