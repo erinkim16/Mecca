@@ -26,11 +26,16 @@ export default async function handler(req, res) {
       codeTemplates = [],
     } = req.body;
 
+    console.log('here')
+
     if (!title || !description || !content) {
       return res.status(400).json({
         error: "Blog posts must have a title, description, and valid content.",
       });
     }
+
+    console.log('here 2')
+
 
     try {
       const templateIds = getTemplateIds(
@@ -41,6 +46,8 @@ export default async function handler(req, res) {
           id: { in: templateIds },
         },
       });
+
+      console.log(templates)
 
       if (templates.length !== templateIds.length) {
         return res.status(400).json({

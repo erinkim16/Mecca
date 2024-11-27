@@ -4,6 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import MenuBar from "./menu-bar"; // Ensure proper path to MenuBar
 import TagInput from "../general/tag-input"; // Import the TagInput component
 import axios from "axios";
+import { useRouter } from "next/router";
 
 const BlogEditor = () => {
   const [title, setTitle] = useState("");
@@ -13,7 +14,7 @@ const BlogEditor = () => {
   const [codeTemplates, setCodeTemplates] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-
+  const router = useRouter();
   const editor = useEditor({
     extensions: [StarterKit],
     content: `<p>Start your blog here...</p>`,
@@ -35,7 +36,7 @@ const BlogEditor = () => {
       alert("You must be logged in to create a blog post.");
       return;
     }
-
+    
     try {
       setLoading(true);
       setMessage(null);
@@ -53,10 +54,10 @@ const BlogEditor = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      const newBlog = response.data;
 
-      if (response.status === 200) {
-        setMessage("Blog post saved successfully!");
-      }
+      router.push(`/blogs/${newBlog.id}`);
+
     } catch (error) {
       console.error("Error saving blog post:", error);
       setMessage("An error occurred while saving the blog post.");
