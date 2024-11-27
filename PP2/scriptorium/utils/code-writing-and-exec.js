@@ -420,13 +420,13 @@ async function executeCodeDocker(language, code, stdin) {
       {
         write: (chunk) => {
           // Handle stdout data
-          stdoutData += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+          stdoutData += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F&&[^\n]]/g, "");
         },
       },
       {
         write: (chunk) => {
           // Handle stderr data
-          stderrData += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+          stderrData += chunk.toString().replace(/[\x00-\x1F\x7F-\x9F&&[^\n]]/g, "");
         },
       }
     );

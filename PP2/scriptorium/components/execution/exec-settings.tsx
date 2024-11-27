@@ -260,10 +260,10 @@ export default function ExecSettings(props: ExecSettingsProps) {
         ></textarea>
 
         <label htmlFor="output">Output:</label>
-        <div id="output" className="w-full">
+        <div id="output" className="w-full break-words whitespace-pre-line">
           <p className="exec-output">{output}</p>
 
-          {error && <p className="exec-error mt-2">{error}</p>}
+          {error && <p className="exec-error mt-2 break-words whitespace-pre-line">{error}</p>}
         </div>
       </div>
     </>
