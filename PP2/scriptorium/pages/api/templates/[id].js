@@ -197,7 +197,7 @@ export default async function handler(req, res) {
           }
 
           //  delete code file from the file system
-          const codeDir = path.join(process.cwd(), template.code.filePath);
+          const codeDir = path.join(process.cwd(), codeTemplate.code.filePath);
 
           if (codeTemplate.code?.filePath && fs.existsSync(codeDir)) {
             try {
