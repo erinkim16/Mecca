@@ -138,10 +138,13 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       const updatedComment = await response.json();
 
       setComments((prev) =>
-        prev.map(
-          (comment) => ({ ...comment, rating: updatedComment.ratingScore, userVote: rating }) // Sync with backend rating
+        prev.map((comment) =>
+          comment.id === updatedComment.id // Check if this is the comment to update
+            ? { ...comment, rating: updatedComment.ratingScore, userVote: rating }
+            : comment // Leave other comments unchanged
         )
       );
+      
     } catch (err) {
       console.error("Error rating comment:", err);
       alert("Failed to rate comment. Please try again later.");
@@ -177,10 +180,13 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
 
       // Update the state to reflect the removed vote
       setComments((prev) =>
-        prev.map(
-          (comment) => ({ ...comment, rating: updatedComment.ratingScore, userVote: 0 }) // Sync with backend rating
+        prev.map((comment) =>
+          comment.id === updatedComment.id 
+            ? { ...comment, rating: updatedComment.ratingScore, userVote: 0 }
+            : comment 
         )
       );
+      
       fetchComments();
     } catch (err) {
       console.error("Error removing vote:", err);

@@ -1,23 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import MenuBar from "./menu-bar"; // Ensure proper path to MenuBar
-import TagInput from "../general/tag-input"; // Import the TagInput component
+import MenuBar from "./menu-bar";
+import TagInput from "../general/tag-input";
 import axios from "axios";
-import { useRouter } from "next/router";
 
-const BlogEditor = () => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState<string>(""); // Input for TagInput
-  const [codeTemplates, setCodeTemplates] = useState<string[]>([]);
+interface BlogEditorProps {
+  initialBlog?: {
+    id: number;
+    title: string;
+    description: string;
+    tags: { name: string }[];
+    content: string;
+    codeTemplates: string[];
+  };
+  isEditMode?: boolean;
+}
+
+const BlogEditor: React.FC<BlogEditorProps> = ({ initialBlog, isEditMode }) => {
+  const [title, setTitle] = useState(initialBlog?.title || "");
+  const [description, setDescription] = useState(initialBlog?.description || "");
+  const [tags, setTags] = useState<string[]>(
+    initialBlog?.tags.map((tag) => tag.name) || []
+  );
+  const [tagInput, setTagInput] = useState<string>("");
+  const [codeTemplates, setCodeTemplates] = useState<string[]>(
+    initialBlog?.codeTemplates || []
+  );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const router = useRouter();
+
   const editor = useEditor({
     extensions: [StarterKit],
-    content: `<p>Start your blog here...</p>`,
+    content: initialBlog?.content || `<p>Start your blog here...</p>`,
   });
 
   const saveBlogPost = async () => {
@@ -33,31 +48,36 @@ const BlogEditor = () => {
     const token = localStorage.getItem("accessToken");
 
     if (!token) {
-      alert("You must be logged in to create a blog post.");
+      alert("You must be logged in to save a blog post.");
       return;
     }
-    
+
     try {
       setLoading(true);
       setMessage(null);
 
-      const response = await axios.post(
-        "/api/blogs",
-        {
+      const url = isEditMode
+        ? `/api/blogs/${initialBlog?.id}` // Update blog
+        : "/api/blogs"; // Create new blog
+
+      const method = isEditMode ? "PUT" : "POST";
+
+      const response = await axios({
+        url,
+        method,
+        data: {
           title,
           description,
           content,
           tags,
           codeTemplates,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const newBlog = response.data;
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      router.push(`/blogs/${newBlog.id}`);
-
+      if (response.status === 200) {
+        setMessage(isEditMode ? "Blog post updated successfully!" : "Blog post created successfully!");
+      }
     } catch (error) {
       console.error("Error saving blog post:", error);
       setMessage("An error occurred while saving the blog post.");
@@ -68,9 +88,8 @@ const BlogEditor = () => {
 
   return (
     <div className="blog-editor">
-      <h1>Create a New Blog Post</h1>
+      <h1>{isEditMode ? "Edit Blog Post" : "Create a New Blog Post"}</h1>
 
-      {/* Title Input */}
       <input
         type="text"
         placeholder="Blog Title"
@@ -79,7 +98,6 @@ const BlogEditor = () => {
         className="input-class"
       />
 
-      {/* Description Input */}
       <input
         placeholder="Short Description"
         value={description}
@@ -87,15 +105,8 @@ const BlogEditor = () => {
         className="input-class"
       />
 
-      {/* Tag Input Component */}
-      <TagInput
-        tags={tags}
-        setTags={setTags}
-        input={tagInput}
-        setInput={setTagInput}
-      />
+      <TagInput tags={tags} setTags={setTags} input={tagInput} setInput={setTagInput} />
 
-      {/* Code Templates Input */}
       <input
         type="text"
         placeholder="Code Templates (comma-separated URLs)"
@@ -106,16 +117,13 @@ const BlogEditor = () => {
         className="input-class"
       />
 
-      {/* Rich Text Editor */}
       {editor && <MenuBar editor={editor} />}
       <EditorContent editor={editor} className="editor-content" />
 
-      {/* Save Button */}
       <button onClick={saveBlogPost} className="save-button" disabled={loading}>
-        {loading ? "Saving..." : "Save Blog Post"}
+        {loading ? "Saving..." : isEditMode ? "Update Blog Post" : "Save Blog Post"}
       </button>
 
-      {/* Feedback Message */}
       {message && <p className="feedback-message">{message}</p>}
     </div>
   );

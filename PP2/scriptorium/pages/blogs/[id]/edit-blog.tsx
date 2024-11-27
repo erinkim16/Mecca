@@ -50,14 +50,14 @@ const EditBlogPage = () => {
       <h1>Edit Blog Post</h1>
       {blog && (
        <BlogEditor
-       initialBlog={{
-         id: blog.id,
-         title: blog.title,
-         description: blog.description,
-         tags: blog.tags ? blog.tags.map(tag => ({ name: tag })) : [], // Ensure `tags` is an array of objects with a name property
-         content: blog.content,
-         codeTemplates: blog.codeTemplates || [],
-       }}
+   initialBlog={{
+     id: blog.id,
+     title: blog.title,
+     description: blog.description,
+     tags: blog.tags ? blog.tags.map(tag => ({ name: tag })) : [], // Ensure `tags` is an array of objects with a name property
+     content: JSON.stringify(blog.content), // Add the content property
+     codeTemplates: blog.codeTemplates || [],
+   }}
        isEditMode={true}
      />
      
