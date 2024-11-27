@@ -33,8 +33,7 @@ docker build -t my-ruby-env -f Dockerfile.ruby .
 docker build -t my-golang-env -f Dockerfile.golang .
 docker build -t my-perl-env -f Dockerfile.perl . 
 docker build -t my-php-env -f Dockerfile.php .
-docker build -t my-swift-env -f Dockerfile.swift . 
 docker build -t my-elixir-env -f Dockerfile.elixir .
-
+docker build -t my-gcc-env -f Dockerfile.gcc .
 
 echo "Startup Complete"

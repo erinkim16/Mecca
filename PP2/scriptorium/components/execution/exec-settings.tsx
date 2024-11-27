@@ -133,12 +133,13 @@ export default function ExecSettings(props: ExecSettingsProps) {
       alert("Login to fork code");
       return;
     }
+
     const response = await axios.post(
       `/api/templates/${id}`,
       {
         codeContent: code,
         language: language,
-        title: title,
+        title: "Fork of " + title,
         explanation: description,
         tags: tags,
       },
@@ -148,10 +149,11 @@ export default function ExecSettings(props: ExecSettingsProps) {
         },
       }
     );
-    if (response.status === 200) {
+    if (response.status === 200 || response.status === 201) {
+      setTitle("Fork of " + title);
       alert("Code forked successfully!");
     } else {
-      alert("Failed to save code.");
+      alert("Failed to fork code.");
     }
   };
 
