@@ -36,12 +36,13 @@ const CommentItem: React.FC<CommentItemProps> = ({
   onRemoveVote,
   onReport,
 }) => {
-  const { id, author, userVote } = comment;
+  const { id, author, userVote, replies } = comment;
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
   const [reportText, setReportText] = useState("");
+  const [showReplies, setShowReplies] = useState(false); // Toggle state for replies
 
   const handleVote = async (vote: number) => {
     const token = validateToken();
@@ -54,7 +55,6 @@ const CommentItem: React.FC<CommentItemProps> = ({
       if (userVote === vote) {
         await onRemoveVote(id); // Remove the vote if it's the same as the current vote
       } else {
-        console.log("here")
         await onRate(id, vote); // Otherwise, cast the vote
       }
     } catch (error) {
@@ -113,74 +113,98 @@ const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   return (
-    <div className="comment-item">
+    <div className="comment-item bg-lightGray dark:bg-darkGray p-4 mb-4">
       <div className="comment-header">
         <p>
-          <strong>{comment.author.username}</strong>: {comment.content}
+          <strong>{author.username}</strong>: {comment.content}
         </p>
         <div className="comment-rating">
-          <span className="rating-label">Rating:</span>
-          <span className="rating-value">{comment.rating}</span>
+          <span className="rating-label font-semibold">Rating:</span>
+          <span className="rating-value ml-2">{comment.rating}</span>
         </div>
       </div>
-      <div className="comment-actions">
+      <div className="comment-actions mt-2">
         <button
           onClick={() => handleVote(1)}
           disabled={isActionLoading}
-          className={comment.userVote === 1 ? "active" : ""}
+          className={`btn ${userVote === 1 ? "active" : ""}`}
         >
           👍 Upvote
         </button>
         <button
           onClick={() => handleVote(-1)}
           disabled={isActionLoading}
-          className={comment.userVote === -1 ? "active" : ""}
+          className={`btn ${userVote === -1 ? "active" : ""}`}
         >
           👎 Downvote
         </button>
         <button
           onClick={() => setIsReplying(!isReplying)}
           disabled={isActionLoading}
+          className="btn"
         >
           Reply
         </button>
         <button
           onClick={() => setIsReporting(!isReporting)}
           disabled={isActionLoading}
+          className="btn"
         >
           Report
         </button>
+        {replies && replies.length > 0 && (
+          <button
+            onClick={() => setShowReplies(!showReplies)}
+            className="btn"
+            disabled={isActionLoading}
+          >
+            {showReplies ? "Hide Replies" : `Show Replies (${replies.length})`}
+          </button>
+        )}
       </div>
       {isReporting && (
-        <form onSubmit={handleReport} className="report-form">
+        <form onSubmit={handleReport} className="report-form mt-2">
           <textarea
             value={reportText}
             onChange={(e) => setReportText(e.target.value)}
             placeholder="Write the reason for your report..."
             required
             disabled={isActionLoading}
+            className="textarea"
           />
-          <button
-            type="submit"
-            disabled={isActionLoading || !reportText.trim()}
-          >
+          <button type="submit" disabled={isActionLoading || !reportText.trim()} className="btn">
             Submit Report
           </button>
         </form>
       )}
       {isReplying && (
-        <form onSubmit={handleReplySubmit} className="reply-form">
+        <form onSubmit={handleReplySubmit} className="reply-form mt-2">
           <textarea
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             placeholder="Write your reply..."
             required
             disabled={isActionLoading}
+            className="textarea"
           />
-          <button type="submit" disabled={isActionLoading || !replyText.trim()}>
+          <button type="submit" disabled={isActionLoading || !replyText.trim()} className="btn">
             Submit Reply
           </button>
         </form>
+      )}
+      {showReplies && replies && (
+        <div className="replies ml-6 mt-4">
+          {replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              onReply={onReply}
+              onRate={onRate}
+              onRemoveVote={onRemoveVote}
+              onReport={onReport}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

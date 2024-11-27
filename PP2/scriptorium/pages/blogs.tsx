@@ -146,17 +146,21 @@ const BlogList: React.FC = () => {
 
     // Handle query parameters based on selected search field
     if (searchField === "query") {
-      params.append("query", query as string); // Search by title/content
+      params.append("query", query as string);
     } else if (searchField === "tags") {
-      params.append("tags", (query as string[]).join(",")); // Search by tags
+      params.append("tags", (query as string[]).join(","));
     } else if (searchField === "codeTemplate") {
-      params.append("codeTemplate", query as string); // Search by code template title
+      params.append("codeTemplate", query as string);
     }
 
     await fetchBlogs(params);
   };
 
-  // Fetch all blogs when the component mounts
+  // Reset to fetch all blogs
+  const handleReset = async () => {
+    await fetchBlogs(); // Fetch all blogs without any filters
+  };
+
   useEffect(() => {
     fetchBlogs();
   }, []);
@@ -168,44 +172,48 @@ const BlogList: React.FC = () => {
       
       <h1>Search Blog Posts</h1>
       <BlogSearch onSearch={handleSearch} />
-
+      <button
+        onClick={handleReset}
+        className="reset-button bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded-md mb-4"
+      >
+        Reset
+      </button>
       <main>
         {loading && <p className="loading">Loading blogs...</p>}
         {error && <p className="error">{error}</p>}
         {!loading && blogs.length === 0 && !error && (
-          <p className="no-blogs">
-            No blogs found. Try adjusting your search criteria.
-          </p>
+          <p className="no-blogs">No blogs found. Try adjusting your search criteria.</p>
         )}
         <div className="blogs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  {blogs.map((blog) => (
-    <div key={blog.id} className="blog-card border shadow-md p-4 rounded-md flex flex-col">
-      <h2 className="text-lg font-semibold mb-2">
-        <Link href={`/blogs/${blog.id}`} className="text-blue-500 hover:underline">
-          {blog.title}
-        </Link>
-      </h2>
-      <p className="description text-sm text-gray-700 mb-2">{blog.description}</p>
-      <div className="tags mt-2 flex gap-2 mb-2">
-        {blog.tags.map((tag) => (
-          <span
-            className="bg-blue-200 text-blue-800 text-xs px-2 py-1 rounded-full"
-          >
-            #{tag.name}
-          </span>
-        ))}
-      </div>
-      <div className="code-templates text-sm text-gray-500">
-        <strong>Code Templates:</strong>{" "}
-        {blog.codeTemplate.map((template) => (
-          <span className="text-gray-700">
-            {template.title}
-          </span>
-        )).join(", ")}
-      </div>
-    </div>
-  ))}
+          {blogs.map((blog) => (
+            <div key={blog.id} className="blog-card border shadow-md p-4 rounded-md flex flex-col">
+              <h2 className="text-lg font-semibold mb-2">
+                <Link href={`/blogs/${blog.id}`} className="text-blue-500 hover:underline">
+                  {blog.title}
+                </Link>
+              </h2>
+              <p className="description text-sm text-gray-700 mb-2">{blog.description}</p>
+              <div className="tags mt-2 flex gap-2 mb-2">
+                {blog.tags.map((tag) => (
+                  <span className="bg-blue-200 text-blue-800 text-xs px-2 py-1 rounded-full">
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+              <div className="code-templates text-sm text-gray-500">
+  <strong>Code Templates:</strong>{" "}
+  {blog.codeTemplate.length > 0
+    ? blog.codeTemplate.map((template, index) => (
+        <span key={index} className="text-gray-700">
+          {template.title}
+          {index < blog.codeTemplate.length - 1 && ", "} {/* Add comma between titles */}
+        </span>
+      ))
+    : "None"}
 </div>
+            </div>
+          ))}
+        </div>
       </main>
     </div>
     </>

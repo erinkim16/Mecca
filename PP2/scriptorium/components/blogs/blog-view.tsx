@@ -96,6 +96,8 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
 
   
   const isAuthor = userId === blog.author.id;
+
+  console.log(isAuthor)
   const renderContent = () => {
     try {
       const parsedContent = JSON.parse(content);

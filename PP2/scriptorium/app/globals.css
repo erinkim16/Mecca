@@ -105,3 +105,89 @@ textarea {
     text-wrap: balance;
   }
 }
+
+.page-heading {
+  padding-top: 1.5rem; /* Add top padding (adjust as needed) */
+  margin-bottom: 1.5rem; /* Add bottom margin */
+  text-align: center; /* Center-align the text */
+  font-size: 2.25rem; /* Equivalent to text-4xl */
+  font-weight: 800; /* Equivalent to font-extrabold */
+  color: #60a5fa; /* Equivalent to Tailwind's text-blue-400 */
+}
+
+@media (min-width: 640px) {
+  .page-heading {
+    font-size: 3rem; /* Equivalent to text-5xl for larger screens */
+  }
+}
+
+/* Comment List Styling */
+:root {
+  --comment-bg-color: #f3f4f6; /* Light grey for light mode */
+  --comment-text-color: var(--foreground); /* Use foreground color for text */
+}
+
+.dark {
+  --comment-bg-color: #2d2d2d; /* Darker grey for dark mode */
+  --comment-text-color: var(--foreground); /* Consistent text color in dark mode */
+}
+
+.comment-item {
+  background-color: var(--comment-bg-color); /* Dynamic background based on theme */
+  color: var(--comment-text-color); /* Dynamic text color */
+  padding: 8px 12px; /* Adjust padding */
+  border-radius: 4px; /* Slightly rounded corners */
+  font-size: 14px; /* Consistent text size */
+  margin-bottom: 8px; /* Add space between comment items */
+}
+
+.comment-header {
+  font-weight: bold; /* Make author name stand out */
+}
+
+.comment-rating {
+  font-size: 12px; /* Smaller size for rating details */
+}
+
+.comment-actions button {
+  background: var(--foreground); /* Dynamic background based on mode */
+  color: var(--background); /* Dynamic text color for contrast */
+  font-size: 12px; /* Smaller button text */
+  border-radius: 3px; /* Slight rounding for buttons */
+  padding: 4px 8px; /* Compact padding */
+  margin: 4px 2px; /* Small margins between buttons */
+  border: none; /* Remove border for a clean look */
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.comment-actions button:hover {
+  background: var(--primary); /* Primary color on hover */
+  color: var(--foreground); /* Ensure text contrast on hover */
+  transform: scale(1.05); /* Subtle scaling effect */
+}
+
+.comment-actions button.active {
+  background: var(--secondary); /* Secondary color for active state */
+  color: var(--foreground); /* Ensure readable text */
+}
+
+
+textarea {
+  background-color: var(--background); /* Match general background */
+  color: var(--foreground); /* Match general text */
+  border: 1px solid var(--primary-dark); /* Border using primary color */
+  border-radius: 4px; /* Slight rounding */
+  padding: 8px; /* Comfortable padding */
+  width: 100%; /* Full width */
+  font-size: 14px; /* Match font size */
+  resize: vertical; /* Allow vertical resizing */
+}
+
+.replies {
+  margin-left: 16px; /* Indent replies slightly */
+  border-left: 2px solid var(--primary); /* Visual distinction */
+  padding-left: 12px; /* Space from border */
+}
+
+
+

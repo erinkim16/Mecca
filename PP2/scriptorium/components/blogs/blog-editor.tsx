@@ -4,6 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import MenuBar from "./menu-bar";
 import TagInput from "../general/tag-input";
 import axios from "axios";
+import { useRouter } from "next/router";
 
 interface BlogEditorProps {
   initialBlog?: {
@@ -29,7 +30,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initialBlog, isEditMode }) => {
   );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-
+  const router = useRouter();
   const editor = useEditor({
     extensions: [StarterKit],
     content: initialBlog?.content || `<p>Start your blog here...</p>`,
@@ -78,6 +79,9 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initialBlog, isEditMode }) => {
       if (response.status === 200) {
         setMessage(isEditMode ? "Blog post updated successfully!" : "Blog post created successfully!");
       }
+
+      const savedBlog = response.data
+      router.push(`/blogs/${savedBlog.id}`);
     } catch (error) {
       console.error("Error saving blog post:", error);
       setMessage("An error occurred while saving the blog post.");
