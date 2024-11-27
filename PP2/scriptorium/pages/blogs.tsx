@@ -175,21 +175,35 @@ const BlogList: React.FC = () => {
             No blogs found. Try adjusting your search criteria.
           </p>
         )}
-        <ul className="blogs">
-          {blogs.map((blog) => (
-            <li key={blog.id} className="blog-item">
-              <h2>
-                <Link href={`/blogs/${blog.id}`}>{blog.title}</Link>
-              </h2>
-              <p>{blog.description}</p>
-              <p>Tags: {blog.tags.map((tag) => `#${tag.name}`).join(", ")}</p>
-              <p>
-                Code Templates:{" "}
-                {blog.codeTemplate.map((template) => template.title).join(", ")}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <div className="blogs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {blogs.map((blog) => (
+    <div key={blog.id} className="blog-card border shadow-md p-4 rounded-md flex flex-col">
+      <h2 className="text-lg font-semibold mb-2">
+        <Link href={`/blogs/${blog.id}`} className="text-blue-500 hover:underline">
+          {blog.title}
+        </Link>
+      </h2>
+      <p className="description text-sm text-gray-700 mb-2">{blog.description}</p>
+      <div className="tags mt-2 flex gap-2 mb-2">
+        {blog.tags.map((tag) => (
+          <span
+            className="bg-blue-200 text-blue-800 text-xs px-2 py-1 rounded-full"
+          >
+            #{tag.name}
+          </span>
+        ))}
+      </div>
+      <div className="code-templates text-sm text-gray-500">
+        <strong>Code Templates:</strong>{" "}
+        {blog.codeTemplate.map((template) => (
+          <span className="text-gray-700">
+            {template.title}
+          </span>
+        )).join(", ")}
+      </div>
+    </div>
+  ))}
+</div>
       </main>
     </div>
   );

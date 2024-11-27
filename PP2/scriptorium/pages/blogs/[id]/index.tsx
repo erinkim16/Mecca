@@ -5,6 +5,7 @@ import BlogPostView from "@/components/blogs/blog-view";
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
 import { useRouter } from "next/router";
+import NavBar from "@/components/general/nav-bar";
 
 const prisma = new PrismaClient();
 
@@ -151,7 +152,9 @@ const BlogPostPage: React.FC<{ blog: BlogPost | null }> = ({ blog }) => {
   };
 
   return (
-    <div className="blog-page">
+    <>  
+    <NavBar></NavBar>
+    <div className="blog-page m-8">
       <BlogPostView
         blog={{ ...blogState, tags: blogState.tags.map(tag => tag.name) }}
         onEdit={handleEdit}
@@ -164,6 +167,9 @@ const BlogPostPage: React.FC<{ blog: BlogPost | null }> = ({ blog }) => {
         <BlogComments blogId={blogState.id} />
       </div>
     </div>
+    
+    </>
+    
   );
 };
 
