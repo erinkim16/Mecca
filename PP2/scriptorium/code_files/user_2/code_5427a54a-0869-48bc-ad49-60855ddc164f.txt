@@ -1,0 +1,10 @@
+# Prompt and read the first input
+print "Enter the first input: "
+input1 = gets.chomp
+
+# Prompt and read the second input
+print "Enter the second input: "
+input2 = gets.chomp
+
+# Print the inputs
+puts "You entered: #{input1} and #{input2}"

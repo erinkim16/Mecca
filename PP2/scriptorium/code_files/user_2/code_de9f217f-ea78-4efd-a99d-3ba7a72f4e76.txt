@@ -1,0 +1,9 @@
+print "Enter the first input: ";
+my $input1 = <STDIN>;
+chomp($input1);
+
+print "Enter the second input: ";
+my $input2 = <STDIN>;
+chomp($input2);
+
+print "You entered: $input1 and $input2\n";

@@ -1,0 +1,12 @@
+<?php
+// Prompt and read first input
+echo "Enter the first input: ";
+$input1 = trim(fgets(STDIN));
+
+// Prompt and read second input
+echo "Enter the second input: ";
+$input2 = trim(fgets(STDIN));
+
+// Print the inputs
+echo "You entered: $input1 and $input2\n";
+?>
