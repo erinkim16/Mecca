@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import MenuBar from "./menu-bar";
@@ -12,7 +12,7 @@ interface BlogEditorProps {
     title: string;
     description: string;
     tags: { name: string }[];
-    content: string;
+    content: any; // JSON content
     codeTemplates: string[];
   };
   isEditMode?: boolean;
@@ -31,38 +31,44 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initialBlog, isEditMode }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
+
   const editor = useEditor({
     extensions: [StarterKit],
-    content: initialBlog?.content || `<p>Start your blog here...</p>`,
+    content: initialBlog?.content || { type: "doc", content: [] }, // Use parsed JSON
   });
 
   const saveBlogPost = async () => {
     if (!editor) return;
-
+  
     const content = editor.getJSON();
-
+  
+    console.log("Saving content:", {
+      title,
+      description,
+      content,
+      tags,
+      codeTemplates,
+    });
+  
     if (!title || !description || !content) {
       alert("Please fill out all required fields.");
       return;
     }
-
+  
     const token = localStorage.getItem("accessToken");
-
+  
     if (!token) {
       alert("You must be logged in to save a blog post.");
       return;
     }
-
+  
     try {
       setLoading(true);
       setMessage(null);
-
-      const url = isEditMode
-        ? `/api/blogs/${initialBlog?.id}` // Update blog
-        : "/api/blogs"; // Create new blog
-
+  
+      const url = isEditMode ? `/api/blogs/${initialBlog?.id}` : "/api/blogs";
       const method = isEditMode ? "PUT" : "POST";
-
+  
       const response = await axios({
         url,
         method,
@@ -75,13 +81,17 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initialBlog, isEditMode }) => {
         },
         headers: { Authorization: `Bearer ${token}` },
       });
+      
 
+      console.log("Save blog post", response)
       if (response.status === 200) {
-        setMessage(isEditMode ? "Blog post updated successfully!" : "Blog post created successfully!");
+        setMessage(
+          isEditMode
+            ? "Blog post updated successfully!"
+            : "Blog post created successfully!"
+        );
+        router.push(`/blogs/${response.data.updatedBlog.id}`);
       }
-
-      const savedBlog = response.data
-      router.push(`/blogs/${savedBlog.id}`);
     } catch (error) {
       console.error("Error saving blog post:", error);
       setMessage("An error occurred while saving the blog post.");
@@ -89,6 +99,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initialBlog, isEditMode }) => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="blog-editor">

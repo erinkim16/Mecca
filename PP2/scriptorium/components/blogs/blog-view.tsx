@@ -105,57 +105,57 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
 
   const isAuthor = userId === blog.author.id;
 
-
-  const renderContent = () => {
-    try {
-      const parsedContent = JSON.parse(content);
-      return parsedContent?.content?.map((node: { type: string; content?: any[]; attrs?: { level?: number } }, index: number) => {
-        if (node.type === "paragraph") {
-          return (
-            <p key={index}>
-              {node.content?.map((child: any, childIndex: number) => {
-                if (child.type === "text") {
-                  let textElement = <span key={childIndex}>{child.text}</span>;
-
-                  child.marks?.forEach((mark: any) => {
-                    if (mark.type === "bold") {
-                      textElement = <strong key={childIndex}>{textElement}</strong>;
-                    }
-                    if (mark.type === "italic") {
-                      textElement = <em key={childIndex}>{textElement}</em>;
-                    }
-                  });
-
-                  return textElement;
-                }
-                return null;
-              })}
-            </p>
-          );
+  const renderContent = (content: any) => {
+    if (!content || typeof content === "string") {
+      try {
+        content = JSON.parse(content);
+      } catch (err) {
+        console.error("Failed to parse content:", err);
+        return <p>Error rendering content.</p>;
+      }
+    }
+  
+    if (!content || !content.content) {
+      console.error("Invalid content structure:", content);
+      return <p>No content to display.</p>;
+    }
+  
+    const applyMarks = (text: string, marks: any[]) => {
+      if (!marks) return text;
+  
+      return marks.reduce((acc, mark) => {
+        if (mark.type === "bold") {
+          return <strong>{acc}</strong>;
         }
-
-        if (node.type === "heading") {
-          const HeadingTag = `h${node.attrs?.level || 1}`;
-          return React.createElement(
-            HeadingTag,
-            { key: index },
-            node.content?.map((child: any, childIndex: number) => {
+        if (mark.type === "italic") {
+          return <em>{acc}</em>;
+        }
+        // Add more mark types as needed
+        return acc;
+      }, text);
+    };
+  
+    return content.content.map((node: any, index: number) => {
+      if (node.type === "paragraph") {
+        return (
+          <p key={index}>
+            {node.content?.map((child: any, childIndex: number) => {
               if (child.type === "text") {
-                return child.text;
+                const markedText = applyMarks(child.text, child.marks);
+                return <React.Fragment key={childIndex}>{markedText}</React.Fragment>;
               }
               return null;
-            })
-          );
-        }
-
-        return null;
-      });
-    } catch (err) {
-      console.error("Error parsing content:", err);
-      return <p>{content}</p>;
-    }
+            })}
+          </p>
+        );
+      }
+  
+      console.warn("Unhandled node type:", node.type);
+      return null;
+    });
   };
-
+  
+  console.log("Rendered content:", blog.content);
   return (
     <div className="bg-ui-light p-6 rounded-lg shadow-lg text-foreground">
       <h1 className="text-3xl font-bold mb-4">{title}</h1>
@@ -175,7 +175,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
       <div className="rating mb-4">
         <span className="font-semibold">Rating:</span> {blog.rating}
       </div>
-      <div className="content mb-6">{renderContent()}</div>
+      <div >{renderContent(blog.content)}</div>
       <div className="vote-actions flex items-center gap-2 mb-4">
         <button
           onClick={() => handleVote(1)}

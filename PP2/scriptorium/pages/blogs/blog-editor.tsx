@@ -32,7 +32,6 @@ const BlogEditorPage = () => {
   }
   return (
     <>
-    
     <NavBar></NavBar>
     <div className="m-8">
       

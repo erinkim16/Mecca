@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
-import BlogEditor from "@/components/blogs/blog-editor"; // Adjust the path if necessary
+import BlogEditor from "@/components/blogs/blog-editor";
+import NavBar from "@/components/general/nav-bar";
 
 const EditBlogPage = () => {
   const router = useRouter();
@@ -12,10 +13,10 @@ const EditBlogPage = () => {
     title: string;
     description: string;
     tags: string[];
-    content: JSON;
+    content: any; // JSON object for content
     codeTemplates: string[];
   }
-  
+
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,20 +48,19 @@ const EditBlogPage = () => {
 
   return (
     <div className="edit-blog-page">
-      <h1>Edit Blog Post</h1>
+      <NavBar />
       {blog && (
-       <BlogEditor
-   initialBlog={{
-     id: blog.id,
-     title: blog.title,
-     description: blog.description,
-     tags: blog.tags ? blog.tags.map(tag => ({ name: tag })) : [], // Ensure `tags` is an array of objects with a name property
-     content: JSON.stringify(blog.content), // Add the content property
-     codeTemplates: blog.codeTemplates || [],
-   }}
-       isEditMode={true}
-     />
-     
+        <BlogEditor
+          initialBlog={{
+            id: blog.id,
+            title: blog.title,
+            description: blog.description,
+            tags: blog.tags.map((tag) => ({ name: tag })),
+            content: blog.content, // Pass JSON content directly
+            codeTemplates: blog.codeTemplates || [],
+          }}
+          isEditMode={true}
+        />
       )}
     </div>
   );
