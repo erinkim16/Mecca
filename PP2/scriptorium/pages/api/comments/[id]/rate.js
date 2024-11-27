@@ -90,7 +90,7 @@ export default async function handler(req, res) {
   
       // Adjust the rating score on the comment
       const adjustment = -existingVote.rating;
-      await prisma.comment.update({
+      const updated = await prisma.comment.update({
         where: { id: parseInt(id) },
         data: {
           ratingScore: {
@@ -99,10 +99,8 @@ export default async function handler(req, res) {
         },
       });
 
-
-      console.log("updated")
   
-      return res.status(200).json({ message: "Successful" });
+      return res.status(200).json(updated);
     } catch (error) {
       console.error("Error removing vote:", error);
       return res.status(500).json({ error: "Failed to remove vote" });

@@ -58,6 +58,8 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
 
       const newComment = await response.json();
 
+      console.log("New comment,", newComment);
+
       if (parentId) {
         // Fetch the updated parent comment with its replies
         const updatedParentResponse = await fetch(`/api/comments/${parentId}`);
@@ -68,6 +70,7 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
             comment.id === parentId ? updatedParent : comment
           )
         );
+        fetchComments;
       } else {
         setComments((prevComments) => [newComment, ...prevComments]);
       }

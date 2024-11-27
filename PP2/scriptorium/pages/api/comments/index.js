@@ -35,7 +35,6 @@ export default async function handler(req, res) {
           createdAt: true,
           author: {
             select: {
-              id: true,
               username: true,
             },
           },
@@ -47,7 +46,6 @@ export default async function handler(req, res) {
               ratingScore: true,
               author: {
                 select: {
-                  id: true,
                   username: true,
                 },
               },
@@ -64,7 +62,7 @@ export default async function handler(req, res) {
           parentId: null,
         },
       });
-      console.log(comments);
+    
       const totalPages = Math.ceil(totalComments / limit);
 
       return res.status(200).json({
@@ -98,7 +96,26 @@ export default async function handler(req, res) {
       if (!content || typeof content !== "string" || content.trim() === "") {
         return res.status(400).json({ error: "Content cannot be empty" });
       }
-      
+
+      // Validate `authorId`
+    const authorExists = await prisma.user.findUnique({ where: { id: user.id } });
+    if (!authorExists) {
+      return res.status(400).json({ error: "Author does not exist." });
+    }
+
+    // Validate `blogPostId`
+    const blogPostExists = await prisma.blogPost.findUnique({ where: { id: parseInt(blogId) } });
+    if (!blogPostExists) {
+      return res.status(400).json({ error: "Blog post does not exist." });
+    }
+
+    // Validate `parentId` (if provided)
+    if (parentId) {
+      const parentCommentExists = await prisma.comment.findUnique({ where: { id: parseInt(parentId) } });
+      if (!parentCommentExists) {
+        return res.status(400).json({ error: "Parent comment does not exist." });
+      }
+    }
 
       // when you create the comment -> check if you can send the username when creating one to fix the submit issue?
       const comment = await prisma.comment.create({
@@ -108,11 +125,19 @@ export default async function handler(req, res) {
           blogPostId: parseInt(blogId),
           parentId: parentId ? parseInt(parentId) : null,
         },
+        include: {
+          author: {
+        select: {
+          username: true,
+        },
+          },
+        },
       });
-
+      console.log(comment);
       return res
         .status(201)
-        .json({ message: "Comment added successfully", comment });
+        .json(comment);
+      
     } else {
       return res.status(405).json({ error: "Method not allowed" });
     }
