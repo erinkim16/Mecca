@@ -33,8 +33,9 @@ const InappropriateBlogs = () => {
         window.location.href = "/login-page"; // Redirect to login page
       }
     };
-    fetchBlogPosts();
     checkAuth();
+
+    fetchBlogPosts();
   }, [currentPage]);
 
   const fetchBlogPosts = async () => {
