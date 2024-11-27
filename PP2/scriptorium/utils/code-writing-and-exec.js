@@ -15,8 +15,8 @@ const SUPPORTED_LANGUAGES = [
   "perl",
   "php",
   "ruby",
-  "rust",
-  "swift",
+  "c",
+  "cpp",
 ];
 const TIMEOUT_TIME = 20000;
 const MAX_RESOURCES = 500 * 1024 * 1024; // 10MB
@@ -362,11 +362,18 @@ async function executeCodeDocker(language, code, stdin) {
       fileName = file + "." + fileExt;
       command = ["sh", "-c", `echo "${stdin}" | cargo run ${fileName}`];
       break;
-    case "swift":
-      imageName = "my-swift-env";
-      fileExt = "swift";
+    case "c":
+      imageName = "my-gcc-env";
+      fileExt = "c";
       fileName = file + "." + fileExt;
-      command = ["sh", "-c", `echo "${stdin}" | swift ${fileName}`];
+      command = ["sh", "-c", `gcc ${fileName} -o ${file} && echo "${stdin}" | ./${file}`];
+    case "cpp":
+    imageName = "my-gcc-env";
+    fileExt = "cpp";
+    fileName = file + "." + fileExt;
+    command = ["sh", "-c", `g++ ${fileName} -o ${file} && echo "${stdin}" | ./${file}`];
+
+
       break;
     default:
       console.log("unsupported lang");
@@ -376,6 +383,7 @@ async function executeCodeDocker(language, code, stdin) {
   // Write the code to a file
   const filePath = path.join(tempDir, fileName);
   await fs.writeFileSync(filePath, code);
+  console.log("successful wrote");
 
   // Run the Docker container
   try {

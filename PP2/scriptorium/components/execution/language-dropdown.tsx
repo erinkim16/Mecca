@@ -9,8 +9,8 @@ const SUPPORTED_LANGUAGES = [
   "perl",
   "php",
   "ruby",
-  "rust",
-  "swift",
+  "c",
+  "cpp",
 ];
 
 interface LanguageDropdownProps {
