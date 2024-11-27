@@ -8,6 +8,7 @@ interface BlogPost {
   content: string; // Stored as JSON
   author: { id: number; username: string };
   createdAt: string;
+  rating: number;
   userVote?: number; // Added votes property
 }
 
@@ -15,42 +16,24 @@ interface BlogPostViewProps {
   blog: BlogPost;
   onEdit: () => void;
   onDelete: () => void;
+  onRate: (id: number, rating: number) => void;
+  onRemoveVote: (id: number) => void;
+  onReport: (id: number, reason: string) => void;
 }
-
-const fetchUserData = async (): Promise<number | null> => {
+  
+const validateToken = (): string | null => {
   const token = localStorage.getItem("accessToken");
-
   if (!token) {
+    alert("Please log in to perform this action.");
     return null;
   }
-
-  const userId = localStorage.getItem("userId");
-
-  try {
-    const response = await axios.get(`/api/user/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return userId ? parseInt(userId, 10) : null;
-  } catch (err) {
-    console.error("Error fetching user data:", err);
-    return null;
-  }
+  return token;
 };
 
-const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) => {
+const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onRate, onRemoveVote, onReport }) => {
   const { id, title, tags, content, author, createdAt, userVote } = blog;
   const [userId, setUserId] = useState<number | null>(null);
-
-  const fetchAndSetUserId = async () => {
-    const id = await fetchUserData();
-    setUserId(id);
-  };
-
-  useEffect(() => {
-    fetchAndSetUserId();
-  }, []);
-
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const formattedDate = new Date(createdAt).toLocaleString("en-US", {
     year: "numeric",
     month: "long",
@@ -61,25 +44,33 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) =
     hour12: true,
   });
 
-  const handleVote = async (value: 1 | -1) => {
+ const handleVote = async (vote: number) => {
+    const token = validateToken();
+    if (!token) return;
+
+    if (isActionLoading) return; // Prevent concurrent actions
+
+    setIsActionLoading(true);
+    
     try {
-      const response = await axios.post(
-        `/api/blog/${id}/rate`,
-        { value },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
-      );
-      setCurrentVotes(response.data.updatedVotes);
-    } catch (err) {
-      console.error("Error updating votes:", err);
+      if (userVote === vote) {
+        await onRemoveVote(id); // Remove the vote if it's the same as the current vote
+      } else {
+        await onRate(id, vote); // Otherwise, cast the vote
+      }
+    } catch (error) {
+      console.error(`Error handling vote for blog ID: ${id}`, error);
+      alert("Failed to process your vote. Please try again.");
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const isAuthor = userId === blog.author.id;
-
   const renderContent = () => {
     try {
       const parsedContent = JSON.parse(content);
-      return parsedContent?.content?.map((node: any, index: number) => {
+      return parsedContent?.content?.map((node: { type: string; content?: any[]; attrs?: { level?: number } }, index: number) => {
         if (node.type === "paragraph") {
           return (
             <p key={index}>
@@ -139,16 +130,22 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) =
           </span>
         ))}
       </div>
+      <div className="rating">
+      <span className="rating-label">Rating:</span>
+      <span className="rating-value">{blog.rating}</span>
+      </div>
       <div className="content">{renderContent()}</div>
       <div className="vote-actions">
-      <button
+        <button
           onClick={() => handleVote(1)}
-          className={blog.userVote === 1 ? "active" : ""}
+          disabled={isActionLoading}
+          className={userVote === 1 ? "active" : ""}
         >
           👍 Upvote
         </button>
         <button
           onClick={() => handleVote(-1)}
+          disabled={isActionLoading}
           className={blog.userVote === -1 ? "active" : ""}
         >
           👎 Downvote
@@ -169,7 +166,3 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) =
 };
 
 export default BlogPostView;
-function setCurrentVotes(updatedVotes: any) {
-  throw new Error("Function not implemented.");
-}
-

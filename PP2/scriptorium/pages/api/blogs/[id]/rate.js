@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const where = { userId_blogId: { userId: user.id, blogPostId: parseInt(id) } };
+    const where = { userId_blogPostId: { userId: user.id, blogPostId: parseInt(id) } };
 
     const existing = await prisma.rating.findUnique({
       where,
@@ -51,25 +51,26 @@ export default async function handler(req, res) {
         data: { ratingScore: { increment: ratingAdjustment } },
       });
 
-    return res.status(200).json({ message: "Rating has been processed", updated });
+
+    return res.status(200).json( updated );
   } catch (error) {
-    console.error("Error updating comment rating:", error);
-    return res.status(500).json({ error: "Failed to update comment rating" });
+    console.error("Error updating blog rating:", error);
+    return res.status(500).json({ error: "Failed to update blog rating" });
   }
   } else if (req.method === "DELETE") {
     const { id } = req.query;
 
     if (!id || isNaN(parseInt(id))) {
-      return res.status(400).json({ error: "Invalid or missing comment ID" });
+      return res.status(400).json({ error: "Invalid or missing blog ID" });
     }
   
     try {
       // Find the existing vote
       const existingVote = await prisma.rating.findUnique({
         where: {
-          userId_commentId: {
+          userId_blogPostId: {
             userId: user.id,
-            commentId: parseInt(id),
+            blogPostId: parseInt(id),
           },
         },
       });
@@ -81,16 +82,16 @@ export default async function handler(req, res) {
       // Remove the vote
       await prisma.rating.delete({
         where: {
-          userId_commentId: {
+          userId_blogPostId: {
             userId: user.id,
-            commentId: parseInt(id),
+            blogPostId: parseInt(id),
           },
         },
       });
   
       // Adjust the rating score on the comment
       const adjustment = -existingVote.rating;
-      const updated = await prisma.comment.update({
+      const updated = await prisma.blogPost.update({
         where: { id: parseInt(id) },
         data: {
           ratingScore: {

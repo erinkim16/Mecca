@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import CommentList from "../comments/comment-list";
 import CommentForm from "../comments/add-comment";
+import { PrismaClient } from "@prisma/client";
+import { GetServerSideProps } from "next";
+
+const prisma = new PrismaClient();
 
 interface Comment {
   id: number;
@@ -130,9 +134,14 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
         alert(`Failed to rate comment: ${errorData.error || "Unknown error"}`);
         return;
       }
-      // Parse the updated comment from the server response
 
-      fetchComments();
+      const updatedComment = await response.json();
+
+      setComments((prev) =>
+        prev.map(
+          (comment) => ({ ...comment, rating: updatedComment.ratingScore, userVote: rating }) // Sync with backend rating
+        )
+      );
     } catch (err) {
       console.error("Error rating comment:", err);
       alert("Failed to rate comment. Please try again later.");
@@ -141,14 +150,15 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
 
   const onRemoveVote = async (id: number) => {
     const token = localStorage.getItem("accessToken");
+
     if (!token) {
       alert("You must be logged in to remove your vote.");
       return;
     }
 
     try {
-      const response = await fetch(`/api/comments/${id}/vote`, {
-        method: "DELETE", // Use DELETE to remove the vote
+      const response = await fetch(`/api/comments/${id}/rate`, {
+        method: "DELETE", 
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -168,7 +178,7 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       // Update the state to reflect the removed vote
       setComments((prev) =>
         prev.map(
-          (comment) => ({ ...comment, rating: updatedComment.ratingScore }) // Sync with backend rating
+          (comment) => ({ ...comment, rating: updatedComment.ratingScore, userVote: 0 }) // Sync with backend rating
         )
       );
       fetchComments();
@@ -222,3 +232,39 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
 };
 
 export default BlogComments;
+
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { id } = context.params || {};
+
+  if (!id || isNaN(Number(id))) {
+    return { notFound: true };
+  }
+
+  try {
+    const comment = await prisma.comment.findUnique({
+      where: { id: parseInt(id as string, 10) },
+      include: {
+        author: { select: { id: true, username: true } },
+      },
+    });
+
+    if (!comment) {
+      return { notFound: true };
+    }
+    console.log("Fetched comment from Prisma:", comment);
+
+    return {
+      props: {
+        comment: {
+          ...comment,
+          author: comment.author,
+          rating: comment.ratingScore
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    return { props: { blog: null } };
+  }
+};

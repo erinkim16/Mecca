@@ -38,10 +38,10 @@ export default async function handler(req, res) {
             },
         });
         
-        return res.status(200).json({ message: "Comment has been reported successfully", report });
+        return res.status(200).json({ message: "Blog has been reported successfully", report });
 
     } catch (error) {
-        return res.status(500).json( { error: "Comment could not be reported"});
+        return res.status(500).json( { error: "Blog could not be reported"});
     }
 
 }
