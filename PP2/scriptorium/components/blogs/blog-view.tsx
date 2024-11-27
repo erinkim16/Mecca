@@ -34,6 +34,9 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
   const { id, title, tags, content, author, createdAt, userVote } = blog;
   const [userId, setUserId] = useState<number | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
+  const [reportText, setReportText] = useState("");
+
   const formattedDate = new Date(createdAt).toLocaleString("en-US", {
     year: "numeric",
     month: "long",
@@ -66,6 +69,32 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
     }
   };
 
+
+  const handleReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = validateToken();
+    if (!token) return;
+
+    if (!reportText.trim()) {
+      alert("Please provide a reason for your report.");
+      return;
+    }
+
+    setIsActionLoading(true);
+    try {
+      await onReport(id, reportText);
+      alert("Thank you for your report. We will review it shortly.");
+      setReportText("");
+      setIsReporting(false);
+    } catch (error) {
+      console.error(`Error reporting blog ID: ${id}`, error);
+      alert("Failed to submit the report. Please try again.");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  
   const isAuthor = userId === blog.author.id;
   const renderContent = () => {
     try {
@@ -161,7 +190,32 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
           </button>
         </div>
       )}
-    </div>
+  <div className="actions">
+    <button
+      onClick={() => setIsReporting(!isReporting)}
+      disabled={isActionLoading}
+    >
+      Report
+    </button>
+  </div>
+  {isReporting && (
+    <form onSubmit={handleReport} className="report-form">
+      <textarea
+        value={reportText}
+        onChange={(e) => setReportText(e.target.value)}
+        placeholder="Write the reason for your report..."
+        required
+        disabled={isActionLoading}
+      />
+      <button
+        type="submit"
+        disabled={isActionLoading || !reportText.trim()}
+      >
+        Submit Report
+      </button>
+    </form>
+  )}
+</div>
   );
 };
 
