@@ -328,6 +328,7 @@ export default async function handler(req, res) {
           skip: skip,
           take: parsedLimit,
         });
+        console.log("templates searched:", templates.tags);
 
         // Calculate total pages
         const totalPages = Math.ceil(totalTemplates / parsedLimit);

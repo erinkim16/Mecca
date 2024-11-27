@@ -55,13 +55,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     if (!query.trim()) return; // Avoid empty searches
 
     let parsedQuery: string | string[] = query.trim();
-    if (searchField === "tag") {
-      // If the search field is 'tag', split the input by commas and trim spaces
-      parsedQuery = query
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag); // Filter out empty tags
-    }
+
+    console.log("parsedquery : ", parsedQuery);
 
     onSearch(searchField, parsedQuery);
   };
@@ -115,7 +110,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         onChange={(e) => setQuery(e.target.value)}
         placeholder={
           searchField === "tag"
-            ? "Enter tags, comma-separated"
+            ? "Enter tags, space-separated"
             : `Search by ${searchField}`
         }
         className="input"
