@@ -8,12 +8,13 @@ interface BlogPost {
   content: string; // Stored as JSON
   author: { id: number; username: string };
   createdAt: string;
+  userVote?: number; // Added votes property
 }
 
 interface BlogPostViewProps {
   blog: BlogPost;
-  onEdit: () => void; // Callback for edit functionality
-  onDelete: () => void; // Callback for delete functionality
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
 const fetchUserData = async (): Promise<number | null> => {
@@ -37,18 +38,13 @@ const fetchUserData = async (): Promise<number | null> => {
   }
 };
 
-const BlogPostView: React.FC<BlogPostViewProps> = ({
-  blog,
-  onEdit,
-  onDelete,
-}) => {
-  const { title, tags, content, author, createdAt } = blog;
+const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete }) => {
+  const { id, title, tags, content, author, createdAt, userVote } = blog;
   const [userId, setUserId] = useState<number | null>(null);
 
   const fetchAndSetUserId = async () => {
     const id = await fetchUserData();
     setUserId(id);
-    console.log("Current User ID:", id);
   };
 
   useEffect(() => {
@@ -65,10 +61,24 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({
     hour12: true,
   });
 
-  // Parse JSON content and render
+  const handleVote = async (value: 1 | -1) => {
+    try {
+      const response = await axios.post(
+        `/api/blog/${id}/rate`,
+        { value },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
+      );
+      setCurrentVotes(response.data.updatedVotes);
+    } catch (err) {
+      console.error("Error updating votes:", err);
+    }
+  };
+
+  const isAuthor = userId === blog.author.id;
+
   const renderContent = () => {
     try {
-      const parsedContent = JSON.parse(content); // Parse content JSON
+      const parsedContent = JSON.parse(content);
       return parsedContent?.content?.map((node: any, index: number) => {
         if (node.type === "paragraph") {
           return (
@@ -77,12 +87,9 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({
                 if (child.type === "text") {
                   let textElement = <span key={childIndex}>{child.text}</span>;
 
-                  // Apply marks like bold or italic
                   child.marks?.forEach((mark: any) => {
                     if (mark.type === "bold") {
-                      textElement = (
-                        <strong key={childIndex}>{textElement}</strong>
-                      );
+                      textElement = <strong key={childIndex}>{textElement}</strong>;
                     }
                     if (mark.type === "italic") {
                       textElement = <em key={childIndex}>{textElement}</em>;
@@ -91,13 +98,12 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({
 
                   return textElement;
                 }
-                return null; // Handle other types of child nodes if necessary
+                return null;
               })}
             </p>
           );
         }
 
-        // Handle other node types (e.g., headings, lists)
         if (node.type === "heading") {
           const HeadingTag = `h${node.attrs?.level || 1}`;
           return React.createElement(
@@ -112,15 +118,13 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({
           );
         }
 
-        return null; // Fallback for unsupported node types
+        return null;
       });
     } catch (err) {
       console.error("Error parsing content:", err);
-      return <p>{content}</p>; // Fallback to raw content if JSON parsing fails
+      return <p>{content}</p>;
     }
   };
-  const isAuthor = userId === blog.author.id;
-  console.log("Is Author:", isAuthor);
 
   return (
     <div className="blog-post">
@@ -136,6 +140,20 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({
         ))}
       </div>
       <div className="content">{renderContent()}</div>
+      <div className="vote-actions">
+      <button
+          onClick={() => handleVote(1)}
+          className={blog.userVote === 1 ? "active" : ""}
+        >
+          👍 Upvote
+        </button>
+        <button
+          onClick={() => handleVote(-1)}
+          className={blog.userVote === -1 ? "active" : ""}
+        >
+          👎 Downvote
+        </button>
+      </div>
       {isAuthor && (
         <div className="author-actions">
           <button onClick={onEdit} className="edit-button">
@@ -151,3 +169,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({
 };
 
 export default BlogPostView;
+function setCurrentVotes(updatedVotes: any) {
+  throw new Error("Function not implemented.");
+}
+
