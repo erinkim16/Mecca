@@ -37,6 +37,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
   const [isReporting, setIsReporting] = useState(false);
   const [reportText, setReportText] = useState("");
 
+
   const formattedDate = new Date(createdAt).toLocaleString("en-US", {
     year: "numeric",
     month: "long",
@@ -50,7 +51,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
  const handleVote = async (vote: number) => {
     const token = validateToken();
     if (!token) return;
-
+    
     if (isActionLoading) return; // Prevent concurrent actions
 
     setIsActionLoading(true);
@@ -94,10 +95,17 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
     }
   };
 
-  
+  useEffect(() => {
+    const token = validateToken();
+    if (token) {
+      const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
+      setUserId(decodedToken.id);
+    }
+  }, []);
+
   const isAuthor = userId === blog.author.id;
 
-  console.log(isAuthor)
+
   const renderContent = () => {
     try {
       const parsedContent = JSON.parse(content);
@@ -149,75 +157,90 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ blog, onEdit, onDelete, onR
   };
 
   return (
-    <div className="blog-post">
-      <h1>{title}</h1>
-      <p className="meta-info">
+    <div className="bg-ui-light p-6 rounded-lg shadow-lg text-foreground">
+      <h1 className="text-3xl font-bold mb-4">{title}</h1>
+      <p className="text-sm mb-4">
         By <strong>{author.username}</strong> | Published on: {formattedDate}
       </p>
-      <div className="tags">
+      <div className="tags flex flex-wrap gap-2 mb-4">
         {tags.map((tag, index) => (
-          <span key={index} className="tag">
+          <span
+            key={index}
+            className="bg-primary-light text-primary-dark px-2 py-1 rounded-full text-xs font-medium"
+          >
             #{tag}
           </span>
         ))}
       </div>
-      <div className="rating">
-      <span className="rating-label">Rating:</span>
-      <span className="rating-value">{blog.rating}</span>
+      <div className="rating mb-4">
+        <span className="font-semibold">Rating:</span> {blog.rating}
       </div>
-      <div className="content">{renderContent()}</div>
-      <div className="vote-actions">
+      <div className="content mb-6">{renderContent()}</div>
+      <div className="vote-actions flex items-center gap-2 mb-4">
         <button
           onClick={() => handleVote(1)}
           disabled={isActionLoading}
-          className={userVote === 1 ? "active" : ""}
+          className={`px-4 py-2 rounded text-sm font-medium ${
+            userVote === 1 ? "bg-secondary text-white" : "bg-primary text-black"
+          }`}
         >
           👍 Upvote
         </button>
         <button
           onClick={() => handleVote(-1)}
           disabled={isActionLoading}
-          className={blog.userVote === -1 ? "active" : ""}
+          className={`px-4 py-2 rounded text-sm font-medium ${
+            userVote === -1
+              ? "bg-secondary text-white"
+              : "bg-primary text-black"
+          }`}
         >
           👎 Downvote
         </button>
       </div>
-      {isAuthor && (
-        <div className="author-actions">
-          <button onClick={onEdit} className="edit-button">
-            Edit
-          </button>
-          <button onClick={onDelete} className="delete-button">
-            Delete
-          </button>
-        </div>
-      )}
-  <div className="actions">
+      <div className="author-actions flex gap-4">
+  {isAuthor && onEdit && (
     <button
-      onClick={() => setIsReporting(!isReporting)}
-      disabled={isActionLoading}
+      onClick={onEdit}
+      className="bg-accent text-white px-4 py-2 rounded"
     >
-      Report
+      Edit
     </button>
-  </div>
-  {isReporting && (
-    <form onSubmit={handleReport} className="report-form">
-      <textarea
-        value={reportText}
-        onChange={(e) => setReportText(e.target.value)}
-        placeholder="Write the reason for your report..."
-        required
-        disabled={isActionLoading}
-      />
-      <button
-        type="submit"
-        disabled={isActionLoading || !reportText.trim()}
-      >
-        Submit Report
-      </button>
-    </form>
   )}
+  {isAuthor && onDelete && (
+    <button
+      onClick={onDelete}
+      className="bg-red-500 text-white px-4 py-2 rounded"
+    >
+      Delete
+    </button>
+  )}
+  <button
+    onClick={() => setIsReporting(!isReporting)}
+    className="bg-secondary-light text-secondary-dark px-4 py-2 rounded"
+  >
+    Report
+  </button>
 </div>
+      {isReporting && (
+        <form onSubmit={handleReport} className="mt-4">
+          <textarea
+            value={reportText}
+            onChange={(e) => setReportText(e.target.value)}
+            placeholder="Write the reason for your report..."
+            required
+            disabled={isActionLoading}
+            className="w-full p-2 border rounded"
+          />
+          <button
+            type="submit"
+            className="bg-secondary-dark text-white px-4 py-2 rounded mt-2"
+          >
+            Submit Report
+          </button>
+        </form>
+      )}
+    </div>
   );
 };
 
