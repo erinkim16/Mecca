@@ -141,11 +141,14 @@ const TemplatesPage: React.FC = () => {
       console.log("Search params: ", params.toString());
 
       const token = localStorage.getItem("accessToken"); // Or use cookies
-      const response = await axios.get(`/api/templates?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        `api/templates/my_templates?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setTemplates(response.data.templates);
       setTotalPages(response.data.pagination.totalPages);
