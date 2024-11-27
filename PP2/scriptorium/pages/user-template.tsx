@@ -120,28 +120,33 @@ const TemplatesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchField, setSearchField] = useState("title");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   const fetchTemplates = async (page: number) => {
     try {
-      // Build query string for the backend
-      const params = new URLSearchParams({
-        [searchField]: query,
-        page: page.toString(),
-        limit: "10",
-      });
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("limit", "10");
+
+      // Add the appropriate search parameter based on the field
+      if (searchField === "tag" && Array.isArray(query)) {
+        // Convert array of tags to a comma-separated string
+        params.append("tags", query.join(","));
+      } else if (typeof query === "string") {
+        params.append(searchField, query);
+      }
+
+      console.log("Search params: ", params.toString());
 
       const token = localStorage.getItem("accessToken"); // Or use cookies
-      const response = await axios.get(
-        `/api/templates/my_templates?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`/api/templates?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setTemplates(response.data.templates);
       setTotalPages(response.data.pagination.totalPages);
       setCurrentPage(response.data.pagination.currentPage);
@@ -173,10 +178,10 @@ const TemplatesPage: React.FC = () => {
     }
   }, [currentPage, searchField, query, isLoading]);
 
-  const handleSearch = (field: string, query: string) => {
+  const handleSearch = (field: string, query: string | string[]) => {
     setSearchField(field);
     setQuery(query);
-    setCurrentPage(1); // Reset to first page on new search
+    setCurrentPage(1); // Reset to the first page on a new search
     fetchTemplates(1);
   };
 
@@ -190,21 +195,18 @@ const TemplatesPage: React.FC = () => {
 
   return (
     <>
-    
-    <NavBar />
-    <div className="code-search-page m-8">
-      <h1>Code Search</h1>
-      <SearchBar onSearch={ handleSearch} />
-      <TemplateList templates={templates} />
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-    </div>
-    
+      <NavBar />
+      <div className="code-search-page m-8">
+        <h1>Code Search</h1>
+        <SearchBar onSearch={handleSearch} />
+        <TemplateList templates={templates} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </div>
     </>
-   
   );
 };
 
