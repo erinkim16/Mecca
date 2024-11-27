@@ -33,7 +33,7 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleDarkMode}
-      className="p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-xl transition-all duration-300 ease-in-out"
+      className="p-2 rounded-full text-xl transition-all duration-300 ease-in-out"
     >
       {/* Sun Emoji for light mode */}
       {!darkMode ? (

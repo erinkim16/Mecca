@@ -73,50 +73,93 @@ export default function ExecSettings(props: ExecSettingsProps) {
       return;
     }
 
+    var response;
     if (props.templateInfo.id) {
-      const response = await axios.put(
-        `/api/templates/${props.templateInfo.id}`,
-        {
-          codeContent: code,
-          language: language,
-          title: title,
-          explanation: description,
-          tags: tags,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      try {
+        response = await axios.put(
+          `/api/templates/${props.templateInfo.id}`,
+          {
+            codeContent: code,
+            language: language,
+            title: title,
+            explanation: description,
+            tags: tags,
           },
-        }
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      if (response.status === 200) {
-        alert("Code edited successfully!");
-      } else {
-        alert("Failed to edit code.");
+        if (response.status === 200) {
+          alert("Code edited successfully!");
+        } else {
+          alert("Failed to edit code.");
+        }
+      } catch (error) {
+        // @ts-ignore
+        if (error.response) {
+          // Server responded with a status code outside the 2xx range
+          // @ts-ignore
+          if (error.response.status === 401) {
+            alert("Failed to edit code: Unauthorized");
+          } 
+          // @ts-ignore
+          else if (error.response.status === 400) {
+            alert("Failed to edit code: please provide all fields.");
+          } 
+        } else {
+          // Something else happened during the request
+          // @ts-ignore
+          alert("Error: " + error);
+        }
       }
-    } else {
-      const response = await axios.post(
-        `/api/templates`,
-        {
-          codeContent: code,
-          language: language,
-          title: title,
-          explanation: description,
-          tags: tags,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+    }
+      
+    else {
+      try {
+        response = await axios.post(
+          `/api/templates`,
+          {
+            codeContent: code,
+            language: language,
+            title: title,
+            explanation: description,
+            tags: tags,
           },
-        }
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      if (response.status === 200) {
-        alert("Code saved successfully!");
-      } else {
-        alert("Failed to save code.");
+        if (response.status === 200) {
+          alert("Code saved successfully!");
+        } else {
+          alert("Failed to save code.");
+        }
+  
+      } catch (error) {
+        // @ts-ignore
+        if (error.response) {
+          // Server responded with a status code outside the 2xx range
+          // @ts-ignore
+          if (error.response.status === 401) {
+            alert("Failed to edit code: Unauthorized");
+          } 
+          // @ts-ignore
+          if (error.response.status === 400) {
+            alert("Please provide all necessary fields");
+          } 
+        } else {
+          // Something else happened during the request
+          // @ts-ignore
+          alert("Error: " + error);
+        }
       }
+      
     }
   };
 

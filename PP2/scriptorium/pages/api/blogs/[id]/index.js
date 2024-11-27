@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { verifyAccessToken } from "../../../utils/account/auth";
-import { getTemplateIds } from "../../../pages/api/blogs/index";
+import { verifyAccessToken } from "@/utils/account/auth";
+import { getTemplateIds } from "@/pages/api/blogs/index";
 
 /**
  * Allow users to edit and delete blog posts
