@@ -1,5 +1,5 @@
 // import { useState, useEffect } from "react";
-// import axios from "axios";
+import axios from "axios";
 // import ProfileCard from "@/components/profile/profilecard";
 // import NavBar from "@/components/general/nav-bar";
 
@@ -89,30 +89,79 @@ const ProfilePage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const userId = localStorage.getItem("userId");
+    // const fetchUserData = async () => {
+    //   const userId = localStorage.getItem("userId");
 
-      if (!userId) {
-        setError("User ID not found.");
+    //   if (!userId) {
+    //     setError("User ID not found.");
+    //     setLoading(false);
+    //     router.push("/login-page");
+    //     return;
+    //   }
+
+    //   try {
+    //     const response = await authenticatedFetch(`/api/user/${userId}`);
+
+    //     // Check if the response indicates a successful fetch
+    //     if (!response.ok) {
+    //       setError("Failed to fetch user data.");
+    //       router.push("/login-page");
+    //       return;
+    //     }
+
+    //     // Assuming response.data contains user data
+    //     if (response.data) {
+    //       setUserData(response.data); // Set user data if available
+    //     } else {
+    //       setError("No user data available.");
+    //     }
+    //   } catch (err) {
+    //     console.error("Error fetching user data:", err);
+    //     setError("Failed to fetch user data.");
+    //     router.push("/login-page");
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+    // fetchUserData();
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setError("User is not authenticated.");
         setLoading(false);
-        router.push("/login-page");
         return;
       }
+      const userId = localStorage.getItem("userId");
 
       try {
-        const response = await authenticatedFetch(`/api/user/${userId}`);
-        setUserData(response.data); // Assuming response.data contains user data
+        const response = await axios.get(`/api/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserData(response.data);
       } catch (err) {
         console.error("Error fetching user data:", err);
         setError("Failed to fetch user data.");
       } finally {
         setLoading(false);
-        router.push("/login-page");
+      }
+    };
+    const checkAuth = async () => {
+      try {
+        console.log("Verifying session through authenticatedFetch");
+        await authenticatedFetch("/api/protected");
+        console.log("Session valid, access granted");
+        setLoading(false);
+      } catch (error) {
+        console.error("Authentication failed:", error);
+        setLoading(false); // Ensure loading stops on error
+        router.push("/login-page"); // Redirect to login page
       }
     };
 
+    checkAuth();
+
     fetchUserData();
-  }, []);
+  }, [router]);
 
   if (loading) {
     return <p>Loading...</p>;
