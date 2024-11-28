@@ -13,6 +13,7 @@ interface Comment {
   id: number;
   content: string;
   ratingScore: number;
+  hidden?: boolean;
   author: {
     id: number;
     username: string;

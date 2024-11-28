@@ -8,6 +8,7 @@ interface Comment {
     id: number;
     username: string;
   };
+  hidden?: boolean;
   userVote?: number; // Represents the user's vote on this comment: 1 for upvote, -1 for downvote
   replies?: Comment[];
 }
@@ -198,7 +199,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
       )}
       {showReplies && replies && (
         <div className="replies ml-6 mt-4">
-          {replies.map((reply) => (
+          {replies.filter((reply) => !reply.hidden).map((reply) => (
             <CommentItem
               key={reply.id}
               comment={reply}

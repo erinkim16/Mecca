@@ -14,6 +14,7 @@ interface Comment {
     id: number;
     username: string;
   };
+  hidden?: boolean;
   replies?: Comment[];
 }
 
