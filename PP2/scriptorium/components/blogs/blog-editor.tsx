@@ -84,13 +84,14 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initialBlog, isEditMode }) => {
       
 
       console.log("Save blog post", response)
+      
       if (response.status === 200) {
         setMessage(
           isEditMode
             ? "Blog post updated successfully!"
             : "Blog post created successfully!"
         );
-        router.push(`/blogs/${response.data.updatedBlog.id}`);
+        router.push(`/blogs/${response.data.id}`);
       }
     } catch (error) {
       console.error("Error saving blog post:", error);
