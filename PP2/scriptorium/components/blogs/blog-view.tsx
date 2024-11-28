@@ -24,7 +24,6 @@ interface BlogPostViewProps {
 const validateToken = (): string | null => {
   const token = localStorage.getItem("accessToken");
   if (!token) {
-    alert("Please log in to perform this action.");
     return null;
   }
   return token;
