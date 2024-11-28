@@ -62,15 +62,20 @@ const InappropriateBlogs = () => {
   };
 
   const handleHideBlog = async (blogId: number) => {
+
     try {
       const token = localStorage.getItem("accessToken");
+      console.log("accesstoken", token);
 
-      await axios.put(`/api/admin/inappropriate-blogs`, {
-        blogId,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.put(
+        "/api/admin/inappropriate-blogs",
+        { blogId }, // Request body
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setBlogPosts((prev) =>
         prev.map((post) =>
           post.id === blogId ? { ...post, hidden: true } : post

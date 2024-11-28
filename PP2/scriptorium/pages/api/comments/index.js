@@ -21,7 +21,8 @@ export default async function handler(req, res) {
       const comments = await prisma.comment.findMany({
         where: {
           blogPostId: parsedBlogPostId,
-          parentId: null, // Fetch only top-level comments
+          parentId: null,
+          hidden: false // Fetch only top-level comments
         },
         orderBy:
           sortBy === "ratinghigh"

@@ -64,12 +64,15 @@ const InappropriateComments = () => {
     try {
       const token = localStorage.getItem("accessToken");
 
-      await axios.put(`/api/admin/inappropriate-comments`, {
-        commentId,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.put(
+        "/api/admin/inappropriate-comments",
+        { commentId }, // Request body
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setComments((prev) =>
         prev.map((comment) =>
           comment.id === commentId ? { ...comment, hidden: true } : comment
