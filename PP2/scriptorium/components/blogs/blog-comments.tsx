@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 interface Comment {
   id: number;
   content: string;
-  rating: number;
+  ratingScore: number;
   author: {
     id: number;
     username: string;
@@ -23,6 +23,11 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("default");
 
+  useEffect(() => {
+    fetchComments(); // Ensure comments are properly loaded on the initial render
+  }, []);
+  
+
   const fetchComments = async (sortBy = "default") => {
     setLoading(true);
     setError(null);
@@ -30,7 +35,8 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       const response = await fetch(`/api/comments?blogPostId=${blogId}&sortBy=${sortBy}`);
       if (!response.ok) throw new Error("Failed to fetch comments.");
       const data = await response.json();
-  
+      
+      console.log("Fetched comments with ratings:", JSON.stringify(data.comments, null, 2)); // Debugging
       // Make sure the data has properly nested replies
       setComments(data.comments || []);
     } catch (err) {
@@ -58,35 +64,43 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
         },
         body: JSON.stringify({ content: text, blogId, parentId }),
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to post comment.");
       }
-
+  
       const newComment = await response.json();
-
-      console.log("New comment,", newComment);
-
-      if (parentId) {
-        // Fetch the updated parent comment with its replies
-        const updatedParentResponse = await fetch(`/api/comments/${parentId}`);
-        const updatedParent = await updatedParentResponse.json();
-
-        setComments((prevComments) =>
-          prevComments.map((comment) =>
-            comment.id === parentId ? updatedParent : comment
-          )
-        );
-        fetchComments;
-      } else {
-        setComments((prevComments) => [newComment, ...prevComments]);
-      }
-
-      await fetchComments();
+  
+      const updateCommentsRecursively = (comments: Comment[]): Comment[] =>
+        comments.map((comment: Comment) => {
+          if (comment.id === parentId) {
+        // Add the new comment as a reply to the parent
+        return {
+          ...comment,
+          replies: [...(comment.replies || []), newComment],
+        };
+          }
+      
+          // Traverse deeper if the comment has replies
+          if (comment.replies) {
+        return {
+          ...comment,
+          replies: updateCommentsRecursively(comment.replies),
+        };
+          }
+      
+          return comment; // Leave other comments unchanged
+        });
+  
+      // Update the state
+      setComments((prevComments) =>
+        parentId ? updateCommentsRecursively(prevComments) : [newComment, ...prevComments]
+      );
     } catch (error) {
       console.error("Error posting comment:", error);
     }
   };
+  
 
   const handleReport = async (id: number, report: string) => {
     try {
@@ -117,7 +131,7 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
       alert("You must be logged in to rate comments.");
       return;
     }
-
+  
     try {
       const response = await fetch(`/api/comments/${id}/rate`, {
         method: "PUT",
@@ -127,77 +141,96 @@ const BlogComments: React.FC<{ blogId: number }> = ({ blogId }) => {
         },
         body: JSON.stringify({ rating }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Failed to rate comment:", errorData);
         alert(`Failed to rate comment: ${errorData.error || "Unknown error"}`);
         return;
       }
-
+  
       const updatedComment = await response.json();
-
-      setComments((prev) =>
-        prev.map((comment) =>
-          comment.id === updatedComment.id // Check if this is the comment to update
-            ? { ...comment, rating: updatedComment.ratingScore, userVote: rating }
-            : comment // Leave other comments unchanged
-        )
-      );
+  
+      // Update comments, traversing nested replies
+      const updateCommentsRecursively = (comments: Comment[]): Comment[] => {
+        return comments.map((comment: Comment) => {
+          if (comment.id === updatedComment.id) {
+        // Update the specific comment
+        return { ...comment, ratingScore: updatedComment.ratingScore, userVote: rating };
+          }
       
+          // If the comment has replies, recursively update them
+          if (comment.replies) {
+        return { ...comment, replies: updateCommentsRecursively(comment.replies) };
+          }
+      
+          return comment; // Leave other comments unchanged
+        });
+      };
+  
+      // Update the state
+      setComments((prev) => updateCommentsRecursively(prev));
     } catch (err) {
       console.error("Error rating comment:", err);
       alert("Failed to rate comment. Please try again later.");
     }
   };
-
+  
   const onRemoveVote = async (id: number) => {
     const token = localStorage.getItem("accessToken");
-
+  
     if (!token) {
       alert("You must be logged in to remove your vote.");
       return;
     }
-
+  
     try {
       const response = await fetch(`/api/comments/${id}/rate`, {
-        method: "DELETE", 
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Failed to remove vote:", errorData);
         alert(`Failed to remove vote: ${errorData.error || "Unknown error"}`);
         return;
       }
-
+  
       // Parse the updated comment from the server response
       const updatedComment = await response.json();
-
-      // Update the state to reflect the removed vote
-      setComments((prev) =>
-        prev.map((comment) =>
-          comment.id === updatedComment.id 
-            ? { ...comment, rating: updatedComment.ratingScore, userVote: 0 }
-            : comment 
-        )
-      );
-      
-      fetchComments();
+  
+      // Recursive helper function to update the state
+      const updateCommentsRecursively = (comments: Comment[]): Comment[] => {
+        return comments.map((comment) => {
+          if (comment.id === updatedComment.id) {
+            // Update the specific comment with the new rating and reset the userVote
+            return { ...comment, ratingScore: updatedComment.ratingScore, userVote: 0 };
+          }
+  
+          // If the comment has replies, recursively update them
+          if (comment.replies) {
+            return {
+              ...comment,
+              replies: updateCommentsRecursively(comment.replies),
+            };
+          }
+  
+          return comment; // Leave other comments unchanged
+        });
+      };
+  
+      // Update the state with the recursive function
+      setComments((prev) => updateCommentsRecursively(prev));
     } catch (err) {
       console.error("Error removing vote:", err);
       alert("Failed to remove vote. Please try again later.");
     }
   };
-
-  useEffect(() => {
-    fetchComments();
-  }, [blogId]);
-
+  
   return (
     <div className="blog-comments">
       <h2>Comments</h2>

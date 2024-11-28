@@ -12,7 +12,7 @@ interface CommentListProps {
 interface Comment {
   id: number;
   content: string;
-  rating: number;
+  ratingScore: number;
   author: {
     id: number;
     username: string;
