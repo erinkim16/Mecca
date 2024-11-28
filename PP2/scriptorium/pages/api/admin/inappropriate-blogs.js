@@ -8,6 +8,9 @@ import adminMiddleware from "../../../pages/api/admin/protected";
 const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
+  console.log("req", req);
+  console.log("res", res);
+
   await adminMiddleware(req, res);
 
   // return if the user is not authorized
