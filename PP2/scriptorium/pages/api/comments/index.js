@@ -7,46 +7,51 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const { blogPostId, sortBy } = req.query;
-
+  
       if (!blogPostId || isNaN(parseInt(blogPostId))) {
         return res.status(400).json({ error: "Invalid or missing blogPostId" });
       }
-
+  
       const parsedBlogPostId = parseInt(blogPostId);
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
-
+  
+      // Fetch top-level comments with pagination
       const comments = await prisma.comment.findMany({
         where: {
           blogPostId: parsedBlogPostId,
           parentId: null, // Fetch only top-level comments
         },
         orderBy:
-          sortBy === "ratingHigh"
+          sortBy === "ratinghigh"
             ? { ratingScore: "desc" } // Highest to lowest rating
             : sortBy === "ratingLow"
             ? { ratingScore: "asc" } // Lowest to highest rating
             : { createdAt: "desc" }, // Default: Newest to oldest
-        select: {
-          id: true,
-          content: true, // Include the content of the comment
-          ratingScore: true,
-          createdAt: true,
+        include: {
           author: {
             select: {
-              username: true,
+              username: true, // Include author's username
             },
           },
           replies: {
-            orderBy: { createdAt: "desc" },
-            select: {
-              id: true,
-              content: true, // Include content for replies as well
-              ratingScore: true,
+            orderBy: { createdAt: "desc" }, // Replies ordered by newest
+            include: {
               author: {
                 select: {
-                  username: true,
+                  username: true, // Include reply author's username
+                },
+              },
+              replies: {
+                // Fetch nested replies recursively
+                orderBy: { createdAt: "desc" },
+                include: {
+                  author: {
+                    select: {
+                      username: true, // Include nested reply author's username
+                    },
+                  },
                 },
               },
             },
@@ -56,28 +61,23 @@ export default async function handler(req, res) {
         take: limit,
       });
 
+      // Count total top-level comments for pagination metadata
       const totalComments = await prisma.comment.count({
         where: {
           blogPostId: parsedBlogPostId,
-          parentId: null,
+          parentId: null, // Only top-level comments
         },
       });
-
-      const totalPages = Math.ceil(totalComments / limit);
-
+      
+  
+      // Return comments with metadata
       return res.status(200).json({
-        comments: comments.map((comment) => ({
-          ...comment,
-          rating: comment.ratingScore, // Map ratingScore to rating
-          replies: comment.replies?.map((reply) => ({
-            ...reply,
-            rating: reply.ratingScore, // Map for replies too
-          })),
-        })),
+        comments,
         pagination: {
-          currentPage: page,
-          totalPages,
-          totalComments,
+          total: totalComments,
+          page,
+          limit,
+          totalPages: Math.ceil(totalComments / limit),
         },
       });
     } else if (req.method === "POST") {

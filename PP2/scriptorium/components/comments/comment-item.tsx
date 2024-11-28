@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface Comment {
   id: number;
   content: string;
-  rating: number;
+  ratingScore: number;
   author: {
     id: number;
     username: string;
@@ -36,13 +36,15 @@ const CommentItem: React.FC<CommentItemProps> = ({
   onRemoveVote,
   onReport,
 }) => {
-  const { id, author, userVote, replies } = comment;
+  const { id, author, userVote, replies, ratingScore } = comment;
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
   const [reportText, setReportText] = useState("");
   const [showReplies, setShowReplies] = useState(false); // Toggle state for replies
+
+
 
   const handleVote = async (vote: number) => {
     const token = validateToken();
@@ -64,6 +66,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
       setIsActionLoading(false);
     }
   };
+
+  
 
   const handleReport = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,21 +124,21 @@ const CommentItem: React.FC<CommentItemProps> = ({
         </p>
         <div className="comment-rating">
           <span className="rating-label font-semibold">Rating:</span>
-          <span className="rating-value ml-2">{comment.rating}</span>
+          <span className="rating-value ml-2">{ratingScore}</span>
         </div>
       </div>
       <div className="comment-actions mt-2">
         <button
           onClick={() => handleVote(1)}
           disabled={isActionLoading}
-          className={`btn ${userVote === 1 ? "active" : ""}`}
+          className={`btn ${comment.userVote === 1 ? "active" : ""}`}
         >
           👍 Upvote
         </button>
         <button
           onClick={() => handleVote(-1)}
           disabled={isActionLoading}
-          className={`btn ${userVote === -1 ? "active" : ""}`}
+          className={`btn ${comment.userVote === -1 ? "active" : ""}`}
         >
           👎 Downvote
         </button>
