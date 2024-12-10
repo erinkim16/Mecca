@@ -58,12 +58,21 @@ export default async function handler(req, res) {
       const newUser = await prisma.user.create({
         data: {
           username,
-          password: await hashPassword(password),
+          password: await hashPassword(password), // Password is hashed here
           firstName: firstName || "",
           lastName: lastName || "",
           email,
-          avatar: avatar || 1, // default avatar is 1
-          role: role || "USER", // Default to "USER" role if not provided
+          avatar: avatar || 1, // Default avatar is 1
+          role: role || "USER", // Default role is "USER"
+        },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          avatar: true,
+          role: true,
         },
       });
 
