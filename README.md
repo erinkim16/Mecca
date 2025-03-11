@@ -1,4 +1,5 @@
-# 📜 Mecca
+# 📜 Scriptorium
+
 
 Scriptorium is a collaborative web-based platform for writing, executing, and sharing code templates. It allows users to create, store, and share reusable code snippets while also providing an interactive environment for learning, coding, and sharing knowledge through blog posts. With built-in syntax highlighting, secure code execution, and an intuitive user interface, Scriptorium empowers developers to collaborate and grow together.
 
