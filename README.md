@@ -11,7 +11,7 @@ Scriptorium is a collaborative web-based platform for writing, executing, and sh
 - **Secure Access**: JWT-based authentication for secure user sessions.
 
 ### ✍️ **Code Writing & Execution**
-- **Multi-Language Support**: Write and execute code in C, C++, Java, Python, and JavaScript.
+- **Multi-Language Support**: Write and execute code in 10+ languages, including C, C++, Java, Python, and JavaScript.
 - **Syntax Highlighting**: Dynamic code highlighting for improved readability.
 - **Real-time Code Execution**: Instantly run code and see the output.
 - **Input Support**: Provide standard input (stdin) to interact with code that requires user input.
